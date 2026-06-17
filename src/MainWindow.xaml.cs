@@ -483,9 +483,9 @@ public partial class MainWindow : Window
         {
             if (child is not Border b) continue;
             bool sel = (string?)b.Tag == _cfg.ClientMod;
-            b.Background = Theme.Brush(sel ? p.GhostHover : p.Card);
-            b.BorderBrush = Theme.Brush(sel ? p.Accent : p.Border);
-            b.BorderThickness = new Thickness(sel ? 2 : 1);
+            b.Background = sel ? Theme.Brush(p.GhostHover) : System.Windows.Media.Brushes.Transparent;
+            b.BorderBrush = sel ? Theme.Brush(p.Accent) : System.Windows.Media.Brushes.Transparent;
+            b.BorderThickness = new Thickness(sel ? 1 : 0);
             if (b.Child is StackPanel sp && sp.Children.Count == 2)
             {
                 ((TextBlock)sp.Children[0]).Foreground = Theme.Brush(p.Text);
@@ -515,7 +515,7 @@ public partial class MainWindow : Window
             var captured = inst;
             var st = _lastStates.TryGetValue(inst.Path, out var s) ? s : PatchEngine.GetState(inst, _cfg.OpenAsar);
             var row = new InstallRow();
-            row.RowRoot.Background = Theme.Brush(p.RowBg);
+            row.RowRoot.Background = System.Windows.Media.Brushes.Transparent;
             row.RowRoot.BorderBrush = Theme.Brush(p.Border);
             row.RowName.Text = inst.Name;
             row.RowName.Foreground = Theme.Brush(p.Text);

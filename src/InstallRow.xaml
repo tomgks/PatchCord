@@ -1,8 +1,8 @@
 <UserControl x:Class="PatchCord.InstallRow"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Border x:Name="RowRoot" Background="#313338" CornerRadius="6" Padding="16,13" Margin="0,0,0,8"
-          BorderBrush="#3A3C42" BorderThickness="1">
+  <Border x:Name="RowRoot" Background="Transparent" CornerRadius="0" Padding="2,12" Margin="0"
+          BorderBrush="#3A3C42" BorderThickness="0,0,0,1">
     <Grid>
       <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
       <StackPanel Grid.Column="0">

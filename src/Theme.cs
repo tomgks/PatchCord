@@ -24,9 +24,9 @@ public static class Theme
                 Text = "#F2F3F5", Sub = "#B5BAC1", Accent = "#5865F2", AccentHover = "#4752C4", OnAccent = "#FFFFFF",
                 Ghost = "#383A40", GhostHover = "#41434A", RowBg = "#313338", On = "#23A55A", OnText = "#FFFFFF", Scroll = "#4E5058" },
             ["Dark"] = new ThemePalette {
-                Label = "Dark (OLED)", Bg = "#05070C", Card = "#0B0E15", Card2 = "#121726", Border = "#1E2636",
+                Label = "Dark mode", Bg = "#05070C", Card = "#0B0E15", Card2 = "#121726", Border = "#1E2636",
                 Text = "#EEF1F7", Sub = "#99A2B5", Accent = "#C8CEDD", AccentHover = "#A3ABBD", OnAccent = "#05070C",
-                Ghost = "#121726", GhostHover = "#1B2234", RowBg = "#0B0E15", On = "#2BD17E", OnText = "#05070C", Scroll = "#29314A" },
+                Ghost = "#121726", GhostHover = "#1B2234", RowBg = "#0B0E15", On = "#46B27D", OnText = "#FFFFFF", Scroll = "#29314A" },
             ["Light"] = new ThemePalette {
                 Label = "Light", Bg = "#E1E3E7", Card = "#FFFFFF", Card2 = "#F4F5F7", Border = "#D2D5DA",
                 Text = "#1A1B1E", Sub = "#5C5E66", Accent = "#5865F2", AccentHover = "#4752C4", OnAccent = "#FFFFFF",
@@ -35,11 +35,11 @@ public static class Theme
             ["HighContrast"] = new ThemePalette {
                 Label = "High Contrast", Bg = "#070210", Card = "#0B0418", Card2 = "#120824", Border = "#682084",
                 Text = "#F4EEFF", Sub = "#B9A3E6", Accent = "#742BD7", AccentHover = "#612D96", OnAccent = "#FFFFFF",
-                Ghost = "#0E0619", GhostHover = "#1E1136", RowBg = "#08030F", On = "#B2FF00", OnText = "#000000", Scroll = "#B4DD1E" },
+                Ghost = "#0E0619", GhostHover = "#1E1136", RowBg = "#08030F", On = "#86C25A", OnText = "#0A1505", Scroll = "#5C4A82" },
         };
 
     public static ThemePalette Resolve(string? key) =>
-        key != null && Palettes.TryGetValue(key, out var p) ? p : Palettes["Discord"];
+        key != null && Palettes.TryGetValue(key, out var p) ? p : Palettes["Dark"];
 
     public static SolidColorBrush Brush(string hex) =>
         new((Color)ColorConverter.ConvertFromString(hex)!);

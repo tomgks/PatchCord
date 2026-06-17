@@ -20,7 +20,7 @@ public sealed class Install
 /// <summary>UI / notification preferences.</summary>
 public sealed class UiConfig
 {
-    [JsonPropertyName("theme")]                public string Theme                { get; set; } = "Discord";
+    [JsonPropertyName("theme")]                public string Theme                { get; set; } = "Dark";
     [JsonPropertyName("notificationsEnabled")] public bool   NotificationsEnabled { get; set; } = true;
     [JsonPropertyName("notifyDurationSec")]    public int    NotifyDurationSec    { get; set; } = 7;
     [JsonPropertyName("notifyStyle")]          public string NotifyStyle          { get; set; } = "bar";
@@ -107,7 +107,7 @@ public sealed class AppConfig
         if (IntervalSeconds < 5) IntervalSeconds = 5;
         if (NotifyStyles.IndexOf(Ui.NotifyStyle) < 0) Ui.NotifyStyle = "bar";
         if (Ui.NotifyScale <= 0) Ui.NotifyScale = 1.0;
-        if (!Theme.Palettes.ContainsKey(Ui.Theme)) Ui.Theme = "Discord";
+        if (!Theme.Palettes.ContainsKey(Ui.Theme)) Ui.Theme = "Dark";
 
         ClientMod = (ClientMod ?? "vencord").ToLowerInvariant();
         if (!ClientMods.Contains(ClientMod)) ClientMod = "vencord";
