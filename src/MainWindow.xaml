@@ -205,6 +205,17 @@
               </Button>
             </Grid>
 
+            <TextBlock Text="Startup" Foreground="{DynamicResource Sub}" FontSize="12" FontWeight="Medium" Margin="4,28,0,8"/>
+            <Grid Margin="2,0,0,0">
+              <StackPanel MaxWidth="620" HorizontalAlignment="Left">
+                <TextBlock Text="Run at startup" Foreground="{DynamicResource Text}" FontSize="14" FontWeight="SemiBold"/>
+                <TextBlock Text="Open PatchCord automatically when you sign in to Windows, so it's always keeping your mod patched." Foreground="{DynamicResource Sub}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"/>
+              </StackPanel>
+              <Button x:Name="BtnStartup" Width="62" Height="30" HorizontalAlignment="Right" VerticalAlignment="Top" Foreground="White" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
+                <Button.Template><ControlTemplate TargetType="Button"><Border CornerRadius="8" Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border></ControlTemplate></Button.Template>
+              </Button>
+            </Grid>
+
             <TextBlock Text="Check interval" Foreground="{DynamicResource Sub}" FontSize="12" FontWeight="Medium" Margin="4,28,0,8"/>
             <Grid Margin="2,0,0,0">
               <TextBlock Text="How often to check your installs for re-patching" Foreground="{DynamicResource Sub}" FontSize="12" VerticalAlignment="Center"/>

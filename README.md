@@ -33,13 +33,9 @@ GitHub releases (cached locally) and re-applied under whichever mod you use.
 ## Install
 
 Download `PatchCord.exe` from [Releases](https://github.com/tomgks/PatchCord/releases/latest)
-and run it. To start it at logon, put `install.ps1` next to the exe and run:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File install.ps1
-```
-
-`uninstall.ps1` removes the autostart. Neither one unpatches Discord.
+and run it. That's all — it lives in the tray and keeps your mod patched. To have it
+open automatically when you sign in to Windows, turn on **Run at startup** in the
+Options tab.
 
 ## Build
 

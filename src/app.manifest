@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
-  <assemblyIdentity version="1.5.1.0" name="PatchCord.app" />
+  <assemblyIdentity version="1.6.0.0" name="PatchCord.app" />
 
   <!-- Run as the invoking user; no admin/UAC needed (per-user Discord installs). -->
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">

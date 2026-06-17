@@ -89,6 +89,14 @@ public partial class MainWindow : Window
         BtnGetMod.Click += (_, _) => OpenModDownload();
         BtnGetModOpt.Click += (_, _) => OpenModDownload();
 
+        BtnStartup.Click += (_, _) =>
+        {
+            try { Startup.Set(!Startup.IsEnabled); }
+            catch (Exception ex) { Log.Write($"Startup toggle failed: {ex.Message}", "WARN"); AddLogLine("Couldn't change the startup setting."); }
+            AddLogLine("Run at startup " + (Startup.IsEnabled ? "ON" : "OFF"));
+            UpdateSettingsUi();
+        };
+
         SliderInterval.Value = _cfg.IntervalSeconds;
         LblInterval.Text = $"Every {_cfg.IntervalSeconds} s";
         SliderInterval.ValueChanged += (_, _) =>
@@ -414,6 +422,10 @@ public partial class MainWindow : Window
         BtnOpenAsarGlobal.Content = oa ? "On" : "Off";
         BtnOpenAsarGlobal.Background = Theme.Brush(oa ? p.On : p.GhostHover);
         BtnOpenAsarGlobal.Foreground = Theme.Brush(oa ? p.OnText : p.Text);
+        bool su = Startup.IsEnabled;
+        BtnStartup.Content = su ? "On" : "Off";
+        BtnStartup.Background = Theme.Brush(su ? p.On : p.GhostHover);
+        BtnStartup.Foreground = Theme.Brush(su ? p.OnText : p.Text);
         LblNotifyScale.Text = $"{(int)(_cfg.Ui.NotifyScale * 100)} %";
         LblNotifyDur.Text = $"{_cfg.Ui.NotifyDurationSec} s";
         SetPanelSelection(ThemePanel, _cfg.Ui.Theme);
