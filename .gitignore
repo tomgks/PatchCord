@@ -1,0 +1,15 @@
+# the exe is shipped via GitHub Releases, not tracked in the repo
+*.exe
+
+# user-specific runtime files
+config.json
+*.log
+*.log.old
+launcher.vbs
+_shot_*.png
+openasar.asar
+
+# .NET build artifacts
+bin/
+obj/
+publish/

@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>VencordAutoUpdater</RootNamespace>
+    <AssemblyName>VencordAutoUpdater</AssemblyName>
+    <Version>1.5.0</Version>
+    <Product>Vencord Auto-Updater</Product>
+    <AssemblyTitle>Vencord Auto-Updater</AssemblyTitle>
+    <Company>tomgks</Company>
+    <ApplicationIcon>..\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <DebugType>none</DebugType>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- This is a WPF app that only borrows WinForms for the tray icon/dialog.
+         The high-DPI settings live in app.manifest for WPF; silence the WinForms
+         advisory that wants them configured the WinForms way. -->
+    <NoWarn>$(NoWarn);WFO0003</NoWarn>
+
+    <!-- Single-file, self-contained settings are applied only at publish time
+         (see publish.ps1 / the dotnet publish flags) so a plain `dotnet build`
+         stays framework-dependent and needs no NuGet runtime packs. The released
+         exe is self-contained so users need no separate .NET install, which also
+         trips antivirus far less than a PS2EXE wrapper. -->
+    <PublishSingleFile Condition="'$(PublishSingleFile)' == ''">false</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+  <!-- Drop the implicit global `using System.Windows.Forms` that UseWindowsForms
+       adds; it collides with WPF (Application, Color, Point, Cursors, ...). The
+       few WinForms types we need are reached through the `WinForms`/`Drawing`
+       aliases in MainWindow instead. -->
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <!-- Icons embedded so the single-file exe carries them with no loose files. -->
+  <ItemGroup>
+    <Resource Include="..\app.ico" Link="app.ico" />
+    <Resource Include="..\tray-on.ico" Link="tray-on.ico" />
+    <Resource Include="..\tray-off.ico" Link="tray-off.ico" />
+  </ItemGroup>
+
+  <!-- Bundled fonts: Space Grotesk (UI) + JetBrains Mono (activity log). Embedded
+       so the look is intentional and identical on every machine. -->
+  <ItemGroup>
+    <Resource Include="fonts\*.ttf" />
+  </ItemGroup>
+
+</Project>
