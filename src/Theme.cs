@@ -31,7 +31,6 @@ public static class Theme
                 Label = "Light", Bg = "#E1E3E7", Card = "#FFFFFF", Card2 = "#F4F5F7", Border = "#D2D5DA",
                 Text = "#1A1B1E", Sub = "#5C5E66", Accent = "#5865F2", AccentHover = "#4752C4", OnAccent = "#FFFFFF",
                 Ghost = "#E6E8EC", GhostHover = "#D8DBE0", RowBg = "#F2F3F5", On = "#1F9D55", OnText = "#FFFFFF", Scroll = "#C2C6CC" },
-            // Supplied palette: #742BD7 / #B2FF00 / #612D96 / #682084 / #B4DD1E.
             ["HighContrast"] = new ThemePalette {
                 Label = "High Contrast", Bg = "#070210", Card = "#0B0418", Card2 = "#120824", Border = "#682084",
                 Text = "#F4EEFF", Sub = "#B9A3E6", Accent = "#742BD7", AccentHover = "#612D96", OnAccent = "#FFFFFF",

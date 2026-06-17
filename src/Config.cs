@@ -4,20 +4,17 @@ using System.Text.Json.Serialization;
 
 namespace PatchCord;
 
-/// <summary>A single managed Discord install.</summary>
 public sealed class Install
 {
     [JsonPropertyName("name")]   public string Name   { get; set; } = "";
     [JsonPropertyName("branch")] public string Branch { get; set; } = "Discord";
     [JsonPropertyName("path")]   public string Path   { get; set; } = "";
-    // "enabled" = manage this install (keep the chosen client mod / OpenAsar applied).
     [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
-    // Deprecated per-install OpenAsar flag; migrated to the global setting on load.
+    // legacy per-install flag, migrated to AppConfig.OpenAsar on load
     [JsonPropertyName("openAsar")] public bool OpenAsar { get; set; }
     [JsonPropertyName("custom")] public bool Custom   { get; set; }
 }
 
-/// <summary>UI / notification preferences.</summary>
 public sealed class UiConfig
 {
     [JsonPropertyName("theme")]                public string Theme                { get; set; } = "Dark";
@@ -31,9 +28,7 @@ public sealed class AppConfig
 {
     [JsonPropertyName("monitoringEnabled")] public bool MonitoringEnabled { get; set; } = true;
     [JsonPropertyName("intervalSeconds")]   public int  IntervalSeconds   { get; set; } = 20;
-    // Which client mod to keep injected on managed installs (mutually exclusive).
-    [JsonPropertyName("clientMod")]         public string ClientMod       { get; set; } = "vencord"; // vencord | equicord | none
-    // Keep OpenAsar installed on managed installs (independent of the client mod).
+    [JsonPropertyName("clientMod")]         public string ClientMod       { get; set; } = "vencord"; // vencord | equicord | betterdiscord | none
     [JsonPropertyName("openAsar")]          public bool OpenAsar          { get; set; }
     [JsonPropertyName("installs")]          public List<Install> Installs { get; set; } = new();
     [JsonPropertyName("ui")]                public UiConfig Ui            { get; set; } = new();
@@ -46,7 +41,6 @@ public sealed class AppConfig
         DefaultIgnoreCondition = JsonIgnoreCondition.Never,
     };
 
-    /// <summary>Branches we auto-detect under %LOCALAPPDATA%.</summary>
     public static readonly string[] Branches =
         { "Discord", "DiscordPTB", "DiscordCanary", "DiscordDevelopment" };
 
@@ -77,7 +71,7 @@ public sealed class AppConfig
 
     private static AppConfig FirstRun()
     {
-        // First launch: auto-detect installs. Discord enabled by default; others off.
+        // First launch: enable Discord by default, leave others off.
         var cfg = new AppConfig();
         foreach (var d in FindStandardInstalls())
         {
@@ -111,7 +105,7 @@ public sealed class AppConfig
 
         ClientMod = (ClientMod ?? "vencord").ToLowerInvariant();
         if (!ClientMods.Contains(ClientMod)) ClientMod = "vencord";
-        // Migrate the deprecated per-install OpenAsar flag to the global one, once.
+        // Migrate legacy per-install OpenAsar flag to the global one.
         foreach (var i in Installs)
             if (i.OpenAsar) { OpenAsar = true; i.OpenAsar = false; }
     }
@@ -124,8 +118,6 @@ public sealed class AppConfig
         catch (Exception ex) { Log.Write($"Save config failed: {ex.Message}", "ERROR"); }
     }
 
-    /// <summary>Adds an install if its path isn't already tracked; otherwise updates Enabled.
-    /// Returns true if a new install was added.</summary>
     public bool EnsureInstall(string name, string branch, string path, bool enabled, bool custom)
     {
         var existing = Installs.FirstOrDefault(i =>

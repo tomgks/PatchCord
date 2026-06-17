@@ -368,8 +368,6 @@ public partial class MainWindow : Window
         UpdateModWarning();
     }
 
-    /// <summary>Shows a clear "run the installer once" banner when the chosen
-    /// client mod isn't installed on disk yet.</summary>
     private void UpdateModWarning()
     {
         bool missing = _cfg.ClientMod != "none" && !App.ModInstalled(_cfg.ClientMod);
@@ -401,7 +399,6 @@ public partial class MainWindow : Window
         _ => "https://vencord.dev/download/",
     };
 
-    /// <summary>Opens the official download/installer page for the chosen mod.</summary>
     private void OpenModDownload()
     {
         if (_cfg.ClientMod == "none") return;
@@ -601,7 +598,6 @@ public partial class MainWindow : Window
         }
     }
 
-    /// <summary>One-time disclaimer before enabling OpenAsar. Returns true to proceed.</summary>
     private bool ConfirmEnableOpenAsar()
     {
         var result = System.Windows.MessageBox.Show(this,
@@ -622,7 +618,6 @@ public partial class MainWindow : Window
         _ => "the client mod",
     };
 
-    /// <summary>Logs a hint if the chosen client mod isn't installed on disk yet.</summary>
     private void WarnIfPatcherMissing()
     {
         if (_cfg.ClientMod == "none") return;
@@ -634,8 +629,7 @@ public partial class MainWindow : Window
     {
         var desired = _cfg.ClientMod;                 // vencord / equicord / betterdiscord / none
         bool wantOpenAsar = _cfg.OpenAsar;
-        // Only chase a client mod that's actually installed (so we never break/loop
-        // Discord when the chosen mod isn't on disk).
+        // Don't touch Discord if the mod isn't installed yet.
         bool modReady = desired == "none" || App.ModInstalled(desired);
         string desiredAsar = desired is "vencord" or "equicord" ? desired : "none"; // app.asar layer
         bool desiredBD = desired == "betterdiscord";                                 // core index.js layer
@@ -751,8 +745,7 @@ public partial class MainWindow : Window
                                   $"re-run the {ModLabel(desired)} installer, then toggle this install off/on.", "ERROR");
                     }
                 }
-                // Always restart Discord if we stopped it, even when patching failed,
-                // so we never leave it closed.
+                // Always restart Discord if we stopped it, even on a patch failure.
                 foreach (var c in stopped)
                 {
                     PatchEngine.StartDiscord(c.Path, $"{c.Branch}.exe");

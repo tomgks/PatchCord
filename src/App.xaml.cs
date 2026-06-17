@@ -15,11 +15,9 @@ public partial class App : System.Windows.Application
     public static string EquicordPatcherPath { get; private set; } = "";
     public static string BetterDiscordAsarPath { get; private set; } = "";
 
-    /// <summary>patcher.js path for a given client mod ("vencord"/"equicord").</summary>
     public static string PatcherPathFor(string mod) =>
         mod == "equicord" ? EquicordPatcherPath : VencordPatcherPath;
 
-    /// <summary>Whether the chosen mod's files are present on disk.</summary>
     public static bool ModInstalled(string mod) => mod switch
     {
         "vencord" => System.IO.File.Exists(VencordPatcherPath),
@@ -32,9 +30,7 @@ public partial class App : System.Windows.Application
     {
         base.OnStartup(e);
 
-        // Hidden dev mode: `--dumpstub <outFile> <patcherPath>` writes the stub
-        // app.asar bytes and exits, so the build can be diffed against the
-        // PowerShell/installer output. No UI, no mutex, no side effects.
+        // --dumpstub <outFile> <patcherPath>: writes the stub asar and exits (for byte-diffing)
         if (e.Args.Length == 3 && e.Args[0] == "--dumpstub")
         {
             File.WriteAllBytes(e.Args[1], PatchEngine.BuildStubAsar(e.Args[2]));
@@ -42,7 +38,7 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        // Hidden dev mode: `--openasar-test <dir>` fetches OpenAsar and verifies detection.
+        // --openasar-test <dir>: fetches OpenAsar and checks detection
         if (e.Args.Length == 2 && e.Args[0] == "--openasar-test")
         {
             BaseDir = AppContext.BaseDirectory;
@@ -55,7 +51,7 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        // Hidden dev mode: `--bd-test <appDir>` dry-runs BetterDiscord detection/injection.
+        // --bd-test <appDir>: dry-runs BD detection/injection without touching anything
         if (e.Args.Length == 2 && e.Args[0] == "--bd-test")
         {
             var ad = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -68,7 +64,7 @@ public partial class App : System.Windows.Application
             return;
         }
 
-        // Resolve our folder (the dir holding the exe), then config/log/patcher paths.
+        // Set up paths relative to the exe.
         BaseDir = AppContext.BaseDirectory;
         Log.FilePath = Path.Combine(BaseDir, "patchcord.log");
         ConfigFile = Path.Combine(BaseDir, "config.json");
@@ -79,13 +75,13 @@ public partial class App : System.Windows.Application
             ?? Path.Combine(appData, "Equicord");
         VencordPatcherPath = Path.Combine(vencordBase, "dist", "patcher.js");
         EquicordPatcherPath = Path.Combine(equicordBase, "dist", "patcher.js");
-        // BetterDiscord ships its asar to %APPDATA%\BetterDiscord\data (BD config dataPath).
+        // BD puts its asar in %APPDATA%\BetterDiscord\data
         BetterDiscordAsarPath = Path.Combine(appData, "BetterDiscord", "data", "betterdiscord.asar");
 
         bool tray = e.Args.Any(a => a.TrimStart('-', '/').Equals("tray", StringComparison.OrdinalIgnoreCase));
         bool selfTest = e.Args.Any(a => a.TrimStart('-', '/').Equals("selftest", StringComparison.OrdinalIgnoreCase));
 
-        // Single instance (skipped for the no-side-effect self-test validation).
+        // Single instance mutex (skipped for --selftest).
         if (!selfTest)
         {
             _mutex = new Mutex(initiallyOwned: false, "Global\\PatchCordApp");
@@ -97,7 +93,7 @@ public partial class App : System.Windows.Application
             }
         }
 
-        // Keep running through handler errors instead of hard-crashing.
+        // Don't hard-crash on unhandled UI exceptions.
         DispatcherUnhandledException += (_, ex) =>
         {
             Log.Write($"UI exception: {ex.Exception.Message}\n{ex.Exception.StackTrace}", "ERROR");
