@@ -255,9 +255,7 @@ public partial class MainWindow : Window
         Set("Text", p.Text); Set("Sub", p.Sub); Set("Accent", p.Accent); Set("AccentHover", p.AccentHover);
         Set("OnAccent", p.OnAccent); Set("GhostBg", p.Ghost); Set("GhostHover", p.GhostHover); Set("Scroll", p.Scroll);
 
-        TitleDot.Effect = Theme.Glow(p.Accent, 12);
-        AccentStrip.Background = Theme.Gradient(p.Accent, p.AccentHover, false);
-        TitleUnderline.Background = Theme.Gradient(p.Accent, p.Bg, true);
+        TitleUnderline.Background = Theme.Brush(p.Border);
 
         UpdateStatusUi();
         UpdateSettingsUi();
@@ -323,7 +321,6 @@ public partial class MainWindow : Window
             b.BorderBrush = Theme.Brush(sel ? p.Accent : p.Border);
             b.BorderThickness = new Thickness(sel ? 2 : 1);
             b.Background = Theme.Brush(sel ? p.GhostHover : p.Ghost);
-            b.Effect = sel ? Theme.Glow(p.Accent, 10) : null;
         }
     }
 
@@ -342,7 +339,6 @@ public partial class MainWindow : Window
         bool on = _cfg.MonitoringEnabled;
         var dotColor = on ? p.On : "#80848E";
         StatusDot.Background = Theme.Brush(dotColor);
-        StatusDot.Effect = Theme.Glow(dotColor, 14);
         StatusText.Text = on ? "Active" : "Paused";
         StatusSub.Text = on
             ? "Watching for Discord instances that need re-patching..."
@@ -350,7 +346,6 @@ public partial class MainWindow : Window
         BtnToggle.Content = on ? "Turn Off" : "Turn On";
         BtnToggle.Background = Theme.Brush(on ? p.Accent : p.On);
         BtnToggle.Foreground = Theme.Brush(on ? p.OnAccent : p.OnText);
-        BtnToggle.Effect = Theme.Glow(on ? p.Accent : p.On, 16);
 
         if (_ni != null)
         {
@@ -455,7 +450,7 @@ public partial class MainWindow : Window
         {
             var card = new Border
             {
-                CornerRadius = new CornerRadius(12),
+                CornerRadius = new CornerRadius(6),
                 Padding = new Thickness(16, 12, 16, 12),
                 Margin = new Thickness(0, 0, 0, 9),
                 BorderThickness = new Thickness(1),
@@ -491,7 +486,6 @@ public partial class MainWindow : Window
             b.Background = Theme.Brush(sel ? p.GhostHover : p.Card);
             b.BorderBrush = Theme.Brush(sel ? p.Accent : p.Border);
             b.BorderThickness = new Thickness(sel ? 2 : 1);
-            b.Effect = sel ? Theme.Glow(p.Accent, 10) : null;
             if (b.Child is StackPanel sp && sp.Children.Count == 2)
             {
                 ((TextBlock)sp.Children[0]).Foreground = Theme.Brush(p.Text);

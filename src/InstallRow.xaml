@@ -1,17 +1,17 @@
 <UserControl x:Class="PatchCord.InstallRow"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-  <Border x:Name="RowRoot" Background="#313338" CornerRadius="12" Padding="18,15" Margin="0,0,0,11"
+  <Border x:Name="RowRoot" Background="#313338" CornerRadius="6" Padding="16,13" Margin="0,0,0,8"
           BorderBrush="#3A3C42" BorderThickness="1">
     <Grid>
       <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
       <StackPanel Grid.Column="0">
         <StackPanel Orientation="Horizontal">
           <TextBlock x:Name="RowName" Foreground="#F2F3F5" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
-          <Border x:Name="RowBadge" CornerRadius="6" Padding="8,3" Margin="9,0,0,0" VerticalAlignment="Center">
+          <Border x:Name="RowBadge" CornerRadius="4" Padding="8,3" Margin="9,0,0,0" VerticalAlignment="Center">
             <TextBlock x:Name="RowStatus" Foreground="White" FontSize="10" FontWeight="Bold"/>
           </Border>
-          <Border x:Name="RowOpenAsarBadge" CornerRadius="6" Padding="8,3" Margin="6,0,0,0" VerticalAlignment="Center">
+          <Border x:Name="RowOpenAsarBadge" CornerRadius="4" Padding="8,3" Margin="6,0,0,0" VerticalAlignment="Center">
             <TextBlock x:Name="RowOpenAsarStatus" Foreground="White" FontSize="10" FontWeight="Bold"/>
           </Border>
         </StackPanel>
@@ -20,17 +20,17 @@
       <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
         <Button x:Name="RowToggle" Width="96" Height="30" Foreground="White" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
           <Button.Template><ControlTemplate TargetType="Button">
-            <Border CornerRadius="8" Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+            <Border CornerRadius="5" Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
           </ControlTemplate></Button.Template>
         </Button>
         <Button x:Name="RowOpenAsarToggle" Width="104" Height="30" Margin="8,0,0,0" Foreground="White" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
           <Button.Template><ControlTemplate TargetType="Button">
-            <Border CornerRadius="8" Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+            <Border CornerRadius="5" Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
           </ControlTemplate></Button.Template>
         </Button>
         <Button x:Name="RowRemove" Width="30" Height="30" Margin="8,0,0,0" Foreground="#B5BAC1" Content="&#x2715;" FontSize="12" Cursor="Hand">
           <Button.Template><ControlTemplate TargetType="Button">
-            <Border x:Name="rb" CornerRadius="8" Background="Transparent"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+            <Border x:Name="rb" CornerRadius="5" Background="Transparent"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
             <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="rb" Property="Background" Value="#F23F43"/></Trigger></ControlTemplate.Triggers>
           </ControlTemplate></Button.Template>
         </Button>

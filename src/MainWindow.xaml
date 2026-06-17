@@ -27,7 +27,7 @@
       <Setter Property="Height" Value="42"/><Setter Property="Cursor" Value="Hand"/>
       <Setter Property="Template"><Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Border CornerRadius="11" Background="{TemplateBinding Background}" Padding="20,0">
+          <Border CornerRadius="6" Background="{TemplateBinding Background}" Padding="20,0">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
           </Border>
         </ControlTemplate></Setter.Value></Setter>
@@ -40,7 +40,7 @@
       <Setter Property="Height" Value="38"/><Setter Property="Cursor" Value="Hand"/>
       <Setter Property="Template"><Setter.Value>
         <ControlTemplate TargetType="Button">
-          <Border CornerRadius="16" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Padding="16,0">
+          <Border CornerRadius="8" Background="{TemplateBinding Background}" BorderBrush="{DynamicResource Border}" BorderThickness="1" Padding="16,0">
             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
           </Border>
         </ControlTemplate></Setter.Value></Setter>
@@ -103,15 +103,13 @@
       </Style.Triggers>
     </Style>
   </Window.Resources>
-  <Border Margin="16" CornerRadius="18" Background="{DynamicResource Bg}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
-    <Border.Effect><DropShadowEffect BlurRadius="52" ShadowDepth="0" Opacity="0.88" Color="#000000"/></Border.Effect>
+  <Border Margin="12" CornerRadius="8" Background="{DynamicResource Bg}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+    <Border.Effect><DropShadowEffect BlurRadius="16" ShadowDepth="0" Opacity="0.4" Color="#000000"/></Border.Effect>
     <Grid>
       <Grid.RowDefinitions><RowDefinition Height="50"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
       <Grid x:Name="TitleBar" Grid.Row="0" Background="Transparent">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="22,0,0,0">
-          <Border x:Name="TitleDot" Width="10" Height="10" CornerRadius="2" Background="{DynamicResource Accent}">
-            <Border.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="0" Color="#5865F2" Opacity="0.9"/></Border.Effect>
-          </Border>
+          <Border x:Name="TitleDot" Width="9" Height="9" CornerRadius="2" Background="{DynamicResource Accent}"/>
           <TextBlock Text="PATCH" Foreground="{DynamicResource Text}" FontSize="14" FontWeight="Bold" Margin="12,0,0,0" VerticalAlignment="Center"/>
           <TextBlock Text="CORD" Foreground="{DynamicResource Accent}" FontSize="14" FontWeight="Bold" Margin="3,0,0,0" VerticalAlignment="Center"/>
         </StackPanel>
@@ -135,26 +133,20 @@
         <!-- STATUS TAB -->
         <ScrollViewer x:Name="StatusScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="20,2,20,18">
           <StackPanel>
-            <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16">
-              <Grid>
-                <Grid.ColumnDefinitions><ColumnDefinition Width="4"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                <Border x:Name="AccentStrip" Grid.Column="0" Background="{DynamicResource Accent}" CornerRadius="16,0,0,16"/>
-                <Grid Grid.Column="1" Margin="22,18,20,18">
-                  <StackPanel>
-                    <TextBlock Text="MONITORING" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="Bold"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                      <Border x:Name="StatusDot" Width="16" Height="16" CornerRadius="8" Background="#23A55A" VerticalAlignment="Center">
-                        <Border.Effect><DropShadowEffect x:Name="StatusDotGlow" BlurRadius="14" ShadowDepth="0" Color="#23A55A" Opacity="0.9"/></Border.Effect>
-                      </Border>
-                      <TextBlock x:Name="StatusText" Text="Active" Foreground="{DynamicResource Text}" FontSize="27" FontWeight="Bold" Margin="12,0,0,0"/>
-                    </StackPanel>
-                    <TextBlock x:Name="StatusSub" Text="Watching for Discord updates..." Foreground="{DynamicResource Sub}" FontSize="12" Margin="0,7,0,0"/>
+            <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="8">
+              <Grid Margin="18,15,16,15">
+                <StackPanel>
+                  <TextBlock Text="MONITORING" Foreground="{DynamicResource Sub}" FontSize="11" FontWeight="SemiBold"/>
+                  <StackPanel Orientation="Horizontal" Margin="0,7,0,0">
+                    <Border x:Name="StatusDot" Width="10" Height="10" CornerRadius="5" Background="#23A55A" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="StatusText" Text="Active" Foreground="{DynamicResource Text}" FontSize="18" FontWeight="SemiBold" Margin="9,0,0,0"/>
                   </StackPanel>
-                  <Button x:Name="BtnToggle" Style="{StaticResource Pill}" Content="Turn Off" HorizontalAlignment="Right" VerticalAlignment="Center" Width="128"/>
-                </Grid>
+                  <TextBlock x:Name="StatusSub" Text="Watching for Discord updates..." Foreground="{DynamicResource Sub}" FontSize="12" Margin="0,6,0,0"/>
+                </StackPanel>
+                <Button x:Name="BtnToggle" Style="{StaticResource Pill}" Content="Turn Off" HorizontalAlignment="Right" VerticalAlignment="Center" Width="112"/>
               </Grid>
             </Border>
-            <Border x:Name="ModWarn" Visibility="Collapsed" Margin="0,12,0,0" Padding="14,11" CornerRadius="12" Background="#1F1A0A" BorderBrush="#FAA61A" BorderThickness="1">
+            <Border x:Name="ModWarn" Visibility="Collapsed" Margin="0,12,0,0" Padding="14,11" CornerRadius="6" Background="#1F1A0A" BorderBrush="#FAA61A" BorderThickness="1">
               <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
@@ -167,7 +159,7 @@
                 </Button>
               </Grid>
             </Border>
-            <TextBlock Text="MANAGED DISCORD INSTALLS" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="Bold" Margin="4,30,0,13"/>
+            <TextBlock Text="MANAGED DISCORD INSTALLS" Foreground="{DynamicResource Sub}" FontSize="11" FontWeight="SemiBold" Margin="4,30,0,13"/>
             <StackPanel x:Name="InstallList"/>
             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
               <Button x:Name="BtnDetectDiscord" Style="{StaticResource Ghost}" Content="Detect Discord"/>
@@ -175,8 +167,8 @@
               <Button x:Name="BtnAddCustom" Style="{StaticResource Ghost}" Content="Add custom path..." Margin="10,0,0,0"/>
             </StackPanel>
 
-            <TextBlock Text="ACTIVITY" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="Bold" Margin="4,30,0,13"/>
-            <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="16" Padding="14" Height="130">
+            <TextBlock Text="ACTIVITY" Foreground="{DynamicResource Sub}" FontSize="11" FontWeight="SemiBold" Margin="4,30,0,13"/>
+            <Border Background="{DynamicResource Card}" BorderBrush="{DynamicResource Border}" BorderThickness="1" CornerRadius="8" Padding="14" Height="130">
               <ScrollViewer x:Name="LogScroll" VerticalScrollBarVisibility="Auto">
                 <TextBlock x:Name="LogText" Foreground="{DynamicResource Sub}" FontFamily="pack://application:,,,/fonts/#JetBrains Mono" FontSize="11" TextWrapping="Wrap"/>
               </ScrollViewer>
@@ -187,10 +179,10 @@
         <!-- OPTIONS TAB -->
         <ScrollViewer x:Name="OptionsScroll" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="20,2,20,18">
           <StackPanel>
-            <TextBlock Text="CLIENT MOD" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="Bold" Margin="4,4,0,6"/>
+            <TextBlock Text="CLIENT MOD" Foreground="{DynamicResource Sub}" FontSize="11" FontWeight="SemiBold" Margin="4,4,0,6"/>
             <TextBlock Text="Pick one mod to keep injected after Discord updates — only one client mod can be active at a time. OpenAsar (below) is separate and stacks under any of them." Foreground="{DynamicResource Sub}" FontSize="12" TextWrapping="Wrap" MaxWidth="600" HorizontalAlignment="Left" Margin="4,0,0,12"/>
             <StackPanel x:Name="ClientModPanel"/>
-            <Border x:Name="ModWarnOpt" Visibility="Collapsed" Margin="0,2,0,0" Padding="14,11" CornerRadius="12" Background="#1F1A0A" BorderBrush="#FAA61A" BorderThickness="1">
+            <Border x:Name="ModWarnOpt" Visibility="Collapsed" Margin="0,2,0,0" Padding="14,11" CornerRadius="6" Background="#1F1A0A" BorderBrush="#FAA61A" BorderThickness="1">
               <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
@@ -204,7 +196,7 @@
               </Grid>
             </Border>
 
-            <TextBlock Text="OPENASAR" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="Bold" Margin="4,28,0,8"/>
+            <TextBlock Text="OPENASAR" Foreground="{DynamicResource Sub}" FontSize="11" FontWeight="SemiBold" Margin="4,28,0,8"/>
             <Grid Margin="2,0,0,0">
               <StackPanel MaxWidth="620" HorizontalAlignment="Left">
                 <TextBlock Text="Keep OpenAsar installed" Foreground="{DynamicResource Text}" FontSize="14" FontWeight="SemiBold"/>
@@ -215,7 +207,7 @@
               </Button>
             </Grid>
 
-            <TextBlock Text="CHECK INTERVAL" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="Bold" Margin="4,28,0,8"/>
+            <TextBlock Text="CHECK INTERVAL" Foreground="{DynamicResource Sub}" FontSize="11" FontWeight="SemiBold" Margin="4,28,0,8"/>
             <Grid Margin="2,0,0,0">
               <TextBlock Text="How often to check your installs for re-patching" Foreground="{DynamicResource Sub}" FontSize="12" VerticalAlignment="Center"/>
               <TextBlock x:Name="LblInterval" Foreground="{DynamicResource Text}" FontSize="12" HorizontalAlignment="Right"/>
@@ -224,8 +216,8 @@
 
             <Border x:Name="BtnAppearanceToggle" Cursor="Hand" Background="Transparent" Margin="0,28,0,0">
               <StackPanel Orientation="Horizontal">
-                <TextBlock x:Name="AppearanceChevron" Text="&#x25B8;" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,7,0"/>
-                <TextBlock Text="APPEARANCE AND NOTIFICATIONS" Foreground="{DynamicResource Accent}" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock x:Name="AppearanceChevron" Text="&#x25B8;" Foreground="{DynamicResource Sub}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="4,0,7,0"/>
+                <TextBlock Text="APPEARANCE AND NOTIFICATIONS" Foreground="{DynamicResource Sub}" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
               </StackPanel>
             </Border>
             <StackPanel x:Name="AppearancePanel" Visibility="Collapsed" Margin="2,14,0,2">
