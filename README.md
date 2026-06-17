@@ -24,6 +24,12 @@ No installer binary required — it reuses each mod's files already on disk. If 
 chosen mod isn't installed, run that mod's installer once (the app shows a reminder
 with a **Get** button) — it won't touch Discord until the mod is present.
 
+## Screenshots
+
+| Status | Options |
+|--------|---------|
+| ![Status tab](docs/status.png) | ![Options tab](docs/options.png) |
+
 ## Features
 
 - **Modern WPF UI** with custom window chrome (drag the title bar; minimize sends
