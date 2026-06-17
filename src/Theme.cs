@@ -4,7 +4,7 @@ using System.Windows.Media.Effects;
 
 namespace PatchCord;
 
-/// <summary>A single theme's colour set. Hex strings match the PowerShell original.</summary>
+// A theme's colour set.
 public sealed class ThemePalette
 {
     public required string Label, Bg, Card, Card2, Border, Text, Sub,

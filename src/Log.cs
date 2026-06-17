@@ -2,7 +2,7 @@ using System.IO;
 
 namespace PatchCord;
 
-/// <summary>Tiny file logger (rotates at ~1 MB), mirrors the PowerShell Write-Log.</summary>
+// File logger that rotates at ~1 MB.
 public static class Log
 {
     public static string FilePath { get; set; } = "patchcord.log";

@@ -6,7 +6,7 @@ using System.Windows.Threading;
 
 namespace PatchCord;
 
-/// <summary>Top-left banner notifications. Port of the PowerShell Show-Alert / New-AlertVisual.</summary>
+// Top-left banner notifications.
 public static class Alert
 {
     private static Window? _current;
@@ -24,7 +24,7 @@ public static class Alert
         FontWeight = bold ? FontWeights.Bold : FontWeights.Normal,
     };
 
-    /// <summary>Builds the banner visual from the current theme + style + scale.</summary>
+    // Builds the banner from the current theme, style and scale.
     private static Border BuildVisual(AppConfig cfg, string message)
     {
         var ui = cfg.Ui;

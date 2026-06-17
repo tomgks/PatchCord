@@ -4,19 +4,13 @@ using System.Text;
 
 namespace PatchCord;
 
-/// <summary>
-/// OpenAsar support — install / detect Discord's open-source app.asar replacement
-/// (https://github.com/GooseMod/OpenAsar, AGPL-3.0). Ported from the Vencord
-/// Installer's openasar.go. OpenAsar is a separate project from Vencord; this is
-/// entirely opt-in and the two stack independently.
-/// </summary>
+// Install/detect OpenAsar. Logic from the Vencord installer's openasar.go.
 public static class OpenAsarEngine
 {
     private const string DownloadUrl = "https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar";
     private static readonly byte[] Marker = Encoding.ASCII.GetBytes("OpenAsar");
 
-    // OpenAsar's asar is tiny (~50 KB); a stock/Vencord-stub asar is either much
-    // larger or won't contain the marker, so we skip scanning anything big.
+    // OpenAsar's asar is ~50 KB; anything bigger isn't it, so don't scan large files.
     private const long MaxScanBytes = 4 * 1024 * 1024;
 
     private static readonly HttpClient Http = CreateClient();
@@ -29,15 +23,13 @@ public static class OpenAsarEngine
         return c;
     }
 
-    /// <summary>The underlying asar that actually runs: <c>_app.asar</c> when Vencord
-    /// is patched on top, otherwise <c>app.asar</c>.</summary>
+    // The asar that actually runs: _app.asar if a mod is patched on top, else app.asar.
     private static string UnderlyingAsar(string resourcesDir)
     {
         var under = Path.Combine(resourcesDir, "_app.asar");
         return File.Exists(under) ? under : Path.Combine(resourcesDir, "app.asar");
     }
 
-    /// <summary>True if the running asar is OpenAsar (matches the installer's check).</summary>
     public static bool IsInstalled(string resourcesDir)
     {
         try
@@ -61,11 +53,8 @@ public static class OpenAsarEngine
         return false;
     }
 
-    /// <summary>
-    /// Installs OpenAsar into the given resources dir: backs up the current
-    /// underlying asar to <c>app.asar.backup</c> and writes OpenAsar in its place.
-    /// Caller is responsible for stopping Discord first.
-    /// </summary>
+    // Backs up the underlying asar to app.asar.backup and writes OpenAsar in its place.
+    // Discord must be stopped first.
     public static void Install(string resourcesDir)
     {
         var bytes = GetOpenAsarBytes();
@@ -90,9 +79,7 @@ public static class OpenAsarEngine
         }
     }
 
-    /// <summary>Dev hook: downloads OpenAsar through the real code path, writes it as
-    /// app.asar in <paramref name="resourcesDir"/>, and reports whether IsInstalled
-    /// detects it. Used by `--openasar-test`; no Discord is touched.</summary>
+    // --openasar-test hook: downloads OpenAsar, writes it, reports whether detection works.
     public static string TestFetchAndDetect(string resourcesDir)
     {
         Directory.CreateDirectory(resourcesDir);
@@ -101,8 +88,7 @@ public static class OpenAsarEngine
         return $"downloaded={bytes.Length} bytes; detected={IsInstalled(resourcesDir)}";
     }
 
-    /// <summary>Returns OpenAsar's asar bytes, using a local cache and refreshing it
-    /// from GitHub when stale. Falls back to a stale cache if the download fails.</summary>
+    // Cached locally for 12h; falls back to a stale cache if the download fails.
     private static byte[] GetOpenAsarBytes()
     {
         var cache = Path.Combine(App.BaseDir, "openasar.asar");

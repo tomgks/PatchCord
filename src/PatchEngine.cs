@@ -6,31 +6,24 @@ using System.Text.Json;
 
 namespace PatchCord;
 
-/// <summary>Live state of one managed install. <c>AsarMod</c> is the app.asar-layer
-/// mod ("none"/"vencord"/"equicord"/"other"); <c>BdActive</c> is the BetterDiscord
-/// core-layer patch. <c>OpenAsarPresent</c> is only computed when asked.</summary>
+// Live state of one install. AsarMod is the app.asar-layer mod
+// (none/vencord/equicord/other); BdActive is the BetterDiscord core patch.
 public sealed record InstallState(
     bool Running, bool Patched, string? AppName, string? Resources, string? AppDir, bool Installed,
     bool OpenAsarPresent = false, string AsarMod = "none", bool BdActive = false)
 {
-    /// <summary>The single active client mod, for status display.</summary>
     public string InjectedMod => AsarMod is "vencord" or "equicord" ? AsarMod
         : BdActive ? "betterdiscord" : (AsarMod == "other" ? "other" : "none");
 }
 
-/// <summary>
-/// Port of the Vencord Installer asar patch: back up <c>app.asar</c> to
-/// <c>_app.asar</c> and write a tiny stub <c>app.asar</c> whose index.js
-/// does <c>require("&lt;patcher.js&gt;")</c>.
-/// </summary>
+// Vencord/Equicord asar patch: rename app.asar to _app.asar, write a stub app.asar
+// that requires the mod's patcher.js. Logic from the Vencord installer.
 public static class PatchEngine
 {
     private static readonly Encoding Utf8 = new UTF8Encoding(false);
 
-    /// <summary>Builds the stub app.asar bytes for the given patcher.js path.</summary>
     public static byte[] BuildStubAsar(string patcher)
     {
-        // Minimal JS-string escaping (matches PowerShell ConvertTo-Json behaviour).
         var patcherJson = JsonSerializer.Serialize(patcher,
             new JsonSerializerOptions { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
         var indexJs = $"require({patcherJson})";
@@ -61,7 +54,7 @@ public static class PatchEngine
         return ms.ToArray();
     }
 
-    /// <summary>Highest-versioned <c>app-*</c> folder under the branch root that has a resources dir.</summary>
+    // Highest-versioned app-* folder that has a resources dir.
     public static DirectoryInfo? GetLatestAppDir(string branchRoot)
     {
         if (!Directory.Exists(branchRoot)) return null;
@@ -85,8 +78,7 @@ public static class PatchEngine
         return "Discord";
     }
 
-    /// <summary>Reads the live state. OpenAsar is only scanned for when
-    /// <paramref name="checkOpenAsar"/> is set (it's opt-in and costs a file read).</summary>
+    // OpenAsar is only scanned for when checkOpenAsar is set (it costs a file read).
     public static InstallState GetState(Install inst, bool checkOpenAsar = false)
     {
         bool running = Process.GetProcessesByName(inst.Branch).Length > 0;
@@ -107,8 +99,7 @@ public static class PatchEngine
         return new InstallState(running, patched, appName, resources, appDirPath, appDir != null, openAsar, asarMod, bd);
     }
 
-    /// <summary>Which client mod the current stub points at: "none" (unpatched),
-    /// "vencord", "equicord", or "other" (a stub we didn't write).</summary>
+    // Which mod the current stub points at: none / vencord / equicord / other.
     public static string DetectMod(string resourcesDir)
     {
         var appAsar = Path.Combine(resourcesDir, "app.asar");
@@ -137,8 +128,7 @@ public static class PatchEngine
         return false;
     }
 
-    /// <summary>Reverts a mod patch: deletes the stub and restores the underlying
-    /// asar (used when switching mods). No-op if not patched.</summary>
+    // Reverts a mod patch (used when switching mods). No-op if not patched.
     public static void Unpatch(string resourcesDir)
     {
         var appAsar = Path.Combine(resourcesDir, "app.asar");
@@ -165,7 +155,7 @@ public static class PatchEngine
         Thread.Sleep(300);
     }
 
-    /// <summary>Performs the asar swap. Throws if app.asar is missing or already patched.</summary>
+    // Throws if app.asar is missing or already patched.
     public static void Patch(string resourcesDir, byte[] stubBytes)
     {
         var appAsar = Path.Combine(resourcesDir, "app.asar");

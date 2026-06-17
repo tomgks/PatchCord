@@ -8,7 +8,7 @@ public partial class App : System.Windows.Application
 {
     private Mutex? _mutex;
 
-    /// <summary>Folder the exe lives in — config and log sit beside it.</summary>
+    // Folder the exe lives in; config and log sit beside it.
     public static string BaseDir { get; private set; } = AppContext.BaseDirectory;
     public static string ConfigFile { get; private set; } = "config.json";
     public static string VencordPatcherPath { get; private set; } = "";
