@@ -16,6 +16,8 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, byte[]> _stubs = new(); // "vencord"/"equicord" -> stub bytes
     private readonly Dictionary<string, InstallState> _lastStates = new();
     private readonly HashSet<string> _alerted = new();
+    // Installs whose patch failed this session; left alone so we don't keep killing Discord.
+    private readonly HashSet<string> _patchFailed = new();
 
     private WinForms.NotifyIcon? _ni;
     private DispatcherTimer? _timer;
@@ -204,6 +206,7 @@ public partial class MainWindow : Window
         Save();
         AddLogLine("Monitoring turned " + (_cfg.MonitoringEnabled ? "ON" : "OFF"));
         _alerted.Clear();
+        _patchFailed.Clear();
         InvokeMonitor();
     }
 
@@ -466,6 +469,7 @@ public partial class MainWindow : Window
             {
                 if (_cfg.ClientMod == capturedMod) return;
                 _cfg.ClientMod = capturedMod;
+                _patchFailed.Clear();
                 Save();
                 WarnIfPatcherMissing();
                 AddLogLine($"Client mod: {(capturedMod == "none" ? "None" : ModLabel(capturedMod))}");
@@ -560,7 +564,7 @@ public partial class MainWindow : Window
             tg.Background = Theme.Brush(inst.Enabled ? p.On : p.GhostHover);
             tg.Foreground = Theme.Brush(inst.Enabled ? p.OnText : p.Text);
             tg.Content = inst.Enabled ? "Managed" : "Paused";
-            tg.Click += (_, _) => { captured.Enabled = !captured.Enabled; Save(); InvokeMonitor(); };
+            tg.Click += (_, _) => { captured.Enabled = !captured.Enabled; _patchFailed.Remove(captured.Path); Save(); InvokeMonitor(); };
             row.RowOpenAsarToggle.Visibility = Visibility.Collapsed; // mod/OpenAsar choice lives in Options
 
             var rm = row.RowRemove;
@@ -632,7 +636,8 @@ public partial class MainWindow : Window
             states[inst.Path] = st;
             var key = inst.Path;
 
-            bool managed = inst.Enabled && st.Installed && st.Running && st.Resources != null && st.AppDir != null;
+            bool managed = inst.Enabled && st.Installed && st.Running && st.Resources != null && st.AppDir != null
+                           && !_patchFailed.Contains(inst.Path);
             bool needOpenAsar = managed && wantOpenAsar && !st.OpenAsarPresent;
 
             bool asarChange = false, bdChange = false;
@@ -683,12 +688,14 @@ public partial class MainWindow : Window
             }
             else
             {
+                var stopped = new List<Install>();
                 var done = new List<Install>();
                 foreach (var (c, needOpenAsar, asarChange, bdChange) in candidates)
                 {
                     try
                     {
                         PatchEngine.StopProcesses(c.Branch);
+                        stopped.Add(c);
                         var st = states[c.Path];
                         var resources = st.Resources!;
                         var appDir = st.AppDir!;
@@ -726,16 +733,22 @@ public partial class MainWindow : Window
                     }
                     catch (Exception ex)
                     {
-                        Log.Write($"Failed to restore {c.Name}: {ex.Message}", "ERROR");
+                        // Back off so we don't kill Discord again on the next check.
+                        _patchFailed.Add(c.Path);
+                        Log.Write($"Failed to patch {c.Name}: {ex.Message}. Leaving it alone — " +
+                                  $"re-run the {ModLabel(desired)} installer, then toggle this install off/on.", "ERROR");
                     }
                 }
-                foreach (var c in done)
+                // Always restart Discord if we stopped it, even when patching failed,
+                // so we never leave it closed.
+                foreach (var c in stopped)
                 {
                     PatchEngine.StartDiscord(c.Path, $"{c.Branch}.exe");
                     Log.Write($"Restarted {c.Name}.", "OK");
-                    Alert.Show(_cfg, $"Restored {c.Name}. Discord has been restarted.");
+                    _lastStates[c.Path] = PatchEngine.GetState(c, wantOpenAsar);
                 }
-                foreach (var c in done) _lastStates[c.Path] = PatchEngine.GetState(c, wantOpenAsar);
+                foreach (var c in done)
+                    Alert.Show(_cfg, $"Restored {c.Name}. Discord has been restarted.");
             }
         }
 
