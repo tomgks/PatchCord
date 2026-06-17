@@ -8,7 +8,7 @@ using System.Windows.Threading;
 using Drawing = System.Drawing;
 using WinForms = System.Windows.Forms;
 
-namespace VencordAutoUpdater;
+namespace PatchCord;
 
 public partial class MainWindow : Window
 {
@@ -22,7 +22,7 @@ public partial class MainWindow : Window
     private Drawing.Icon? _iconOn, _iconOff;
     private bool _quitting;
 
-    private const string AppName = "Vencord Auto-Updater";
+    private const string AppName = "PatchCord";
 
     public MainWindow()
     {
@@ -596,7 +596,7 @@ public partial class MainWindow : Window
     {
         var result = System.Windows.MessageBox.Show(this,
             "OpenAsar is a separate open-source project (GooseMod, AGPL-3.0) — an alternative " +
-            "to Discord's app.asar. It is NOT affiliated with Vencord or this app.\n\n" +
+            "to Discord's app.asar. It is NOT affiliated with PatchCord or any client mod.\n\n" +
             "If you turn this on, the app will download OpenAsar from its official GitHub " +
             "releases and keep it installed by replacing Discord's app.asar after updates.\n\n" +
             "You do this at your own risk. Enable OpenAsar for this install?",

@@ -2,7 +2,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 
-namespace VencordAutoUpdater;
+namespace PatchCord;
 
 /// <summary>
 /// OpenAsar support — install / detect Discord's open-source app.asar replacement
@@ -25,7 +25,7 @@ public static class OpenAsarEngine
     private static HttpClient CreateClient()
     {
         var c = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-        c.DefaultRequestHeaders.UserAgent.ParseAdd("VencordAutoUpdater");
+        c.DefaultRequestHeaders.UserAgent.ParseAdd("PatchCord");
         return c;
     }
 

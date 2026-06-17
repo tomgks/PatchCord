@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
-namespace VencordAutoUpdater;
+namespace PatchCord;
 
 /// <summary>Live state of one managed install. <c>AsarMod</c> is the app.asar-layer
 /// mod ("none"/"vencord"/"equicord"/"other"); <c>BdActive</c> is the BetterDiscord

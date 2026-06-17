@@ -2,7 +2,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace VencordAutoUpdater;
+namespace PatchCord;
 
 /// <summary>A single managed Discord install.</summary>
 public sealed class Install

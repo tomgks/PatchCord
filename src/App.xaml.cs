@@ -2,7 +2,7 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 
-namespace VencordAutoUpdater;
+namespace PatchCord;
 
 public partial class App : System.Windows.Application
 {
@@ -46,7 +46,7 @@ public partial class App : System.Windows.Application
         if (e.Args.Length == 2 && e.Args[0] == "--openasar-test")
         {
             BaseDir = AppContext.BaseDirectory;
-            Log.FilePath = Path.Combine(BaseDir, "vencord-auto-updater.log");
+            Log.FilePath = Path.Combine(BaseDir, "patchcord.log");
             string outcome;
             try { outcome = OpenAsarEngine.TestFetchAndDetect(e.Args[1]); }
             catch (Exception ex) { outcome = "ERROR: " + ex.Message; }
@@ -70,7 +70,7 @@ public partial class App : System.Windows.Application
 
         // Resolve our folder (the dir holding the exe), then config/log/patcher paths.
         BaseDir = AppContext.BaseDirectory;
-        Log.FilePath = Path.Combine(BaseDir, "vencord-auto-updater.log");
+        Log.FilePath = Path.Combine(BaseDir, "patchcord.log");
         ConfigFile = Path.Combine(BaseDir, "config.json");
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         var vencordBase = Environment.GetEnvironmentVariable("VENCORD_USER_DATA_DIR")
@@ -88,7 +88,7 @@ public partial class App : System.Windows.Application
         // Single instance (skipped for the no-side-effect self-test validation).
         if (!selfTest)
         {
-            _mutex = new Mutex(initiallyOwned: false, "Global\\VencordAutoUpdaterApp");
+            _mutex = new Mutex(initiallyOwned: false, "Global\\PatchCordApp");
             if (!_mutex.WaitOne(0))
             {
                 Log.Write("App already running. Exiting.", "WARN");

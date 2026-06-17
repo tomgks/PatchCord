@@ -2,7 +2,7 @@ using System.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
-namespace VencordAutoUpdater;
+namespace PatchCord;
 
 /// <summary>
 /// BetterDiscord support. Unlike Vencord/Equicord (which patch <c>app.asar</c>),

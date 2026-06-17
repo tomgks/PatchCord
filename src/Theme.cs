@@ -2,7 +2,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 
-namespace VencordAutoUpdater;
+namespace PatchCord;
 
 /// <summary>A single theme's colour set. Hex strings match the PowerShell original.</summary>
 public sealed class ThemePalette

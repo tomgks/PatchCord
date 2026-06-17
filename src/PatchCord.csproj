@@ -8,11 +8,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
-    <RootNamespace>VencordAutoUpdater</RootNamespace>
-    <AssemblyName>VencordAutoUpdater</AssemblyName>
+    <RootNamespace>PatchCord</RootNamespace>
+    <AssemblyName>PatchCord</AssemblyName>
     <Version>1.5.0</Version>
-    <Product>Vencord Auto-Updater</Product>
-    <AssemblyTitle>Vencord Auto-Updater</AssemblyTitle>
+    <Product>PatchCord</Product>
+    <AssemblyTitle>PatchCord</AssemblyTitle>
     <Company>tomgks</Company>
     <ApplicationIcon>..\app.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>

@@ -1,4 +1,4 @@
-namespace VencordAutoUpdater;
+namespace PatchCord;
 
 public partial class InstallRow : System.Windows.Controls.UserControl
 {

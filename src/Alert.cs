@@ -4,7 +4,7 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using System.Windows.Threading;
 
-namespace VencordAutoUpdater;
+namespace PatchCord;
 
 /// <summary>Top-left banner notifications. Port of the PowerShell Show-Alert / New-AlertVisual.</summary>
 public static class Alert
@@ -51,7 +51,7 @@ public static class Alert
             {
                 outer.Background = Theme.Brush(p.Accent);
                 var sp = new StackPanel();
-                sp.Children.Add(TB("Vencord Auto-Updater", p.OnAccent, titleSize, true));
+                sp.Children.Add(TB("PatchCord", p.OnAccent, titleSize, true));
                 var m = TB(message, p.OnAccent, msgSize, false);
                 m.Margin = new Thickness(0, (int)(5 * scale), 0, 0);
                 sp.Children.Add(m);
@@ -81,7 +81,7 @@ public static class Alert
                 outer.BorderBrush = Theme.Brush(p.Accent);
                 outer.BorderThickness = new Thickness(Math.Max(2, (int)Math.Round(2 * scale)));
                 var sp = new StackPanel();
-                sp.Children.Add(TB("Vencord Auto-Updater", p.Accent, titleSize, true));
+                sp.Children.Add(TB("PatchCord", p.Accent, titleSize, true));
                 var m = TB(message, p.Sub, msgSize, false);
                 m.Margin = new Thickness(0, (int)(5 * scale), 0, 0);
                 sp.Children.Add(m);
@@ -103,7 +103,7 @@ public static class Alert
                 Grid.SetColumn(bar, 0);
                 var sp = new StackPanel();
                 Grid.SetColumn(sp, 1);
-                sp.Children.Add(TB("Vencord Auto-Updater", p.Text, titleSize, true));
+                sp.Children.Add(TB("PatchCord", p.Text, titleSize, true));
                 var m = TB(message, p.Sub, msgSize, false);
                 m.Margin = new Thickness(0, (int)(5 * scale), 0, 0);
                 sp.Children.Add(m);

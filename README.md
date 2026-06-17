@@ -1,4 +1,4 @@
-# Vencord Auto-Updater
+# PatchCord
 
 A small Windows desktop app that **keeps your Discord client mod injected**.
 It runs quietly in the system tray and, whenever a Discord install is **running but
@@ -54,8 +54,8 @@ with a **Get** button) — it won't touch Discord until the mod is present.
 
 ## Install / run
 
-Download **`VencordAutoUpdater.exe`** from the
-[**Releases**](https://github.com/tomgks/vencord-auto-updater/releases/latest) page
+Download **`PatchCord.exe`** from the
+[**Releases**](https://github.com/tomgks/patchcord/releases/latest) page
 and run it — the window opens and the monitor runs in the background.
 
 To make it **start automatically at logon** (in the tray), download/clone this repo
@@ -83,22 +83,18 @@ the [.NET 10 SDK](https://dotnet.microsoft.com/download). From the repo root:
 powershell -ExecutionPolicy Bypass -File publish.ps1
 ```
 
-That produces a single, **self-contained** `publish\VencordAutoUpdater.exe` (~66 MB)
+That produces a single, **self-contained** `publish\PatchCord.exe` (~66 MB)
 that bundles the .NET runtime, so end users need nothing else installed. Under the
 hood it runs:
 
 ```powershell
-dotnet publish src\VencordAutoUpdater.csproj -c Release -r win-x64 `
+dotnet publish src\PatchCord.csproj -c Release -r win-x64 `
   --self-contained true -p:PublishSingleFile=true -o publish
 ```
 
 For day-to-day development, `dotnet build src` does a fast framework-dependent build
-(uses the installed .NET 10 Desktop runtime). Run `VencordAutoUpdater.exe --selftest`
+(uses the installed .NET 10 Desktop runtime). Run `PatchCord.exe --selftest`
 to build the UI and exit without arming the monitor.
-
-> Earlier versions were a PowerShell script compiled with PS2EXE. The app was ported
-> to C# so the release is a real .NET assembly — far less likely to trip antivirus
-> than a PS2EXE wrapper. The old `VencordAutoUpdaterApp.ps1` is kept for reference.
 
 ## Files
 
@@ -106,14 +102,13 @@ to build the UI and exit without arming the monitor.
 |------|---------|
 | `src/` | C# / WPF source (App, MainWindow, PatchEngine, Theme, Alert, Config) |
 | `publish.ps1` | Build the self-contained single-file release exe |
-| `VencordAutoUpdaterApp.ps1` | Legacy PowerShell implementation (reference) |
 | `install.ps1` / `uninstall.ps1` | Add / remove logon autostart |
 | `app.ico` / `tray-on.ico` / `tray-off.ico` | App + tray-state icons |
 
-The compiled `VencordAutoUpdater.exe` is published on the
-[Releases](https://github.com/tomgks/vencord-auto-updater/releases) page.
+The compiled `PatchCord.exe` is published on the
+[Releases](https://github.com/tomgks/patchcord/releases) page.
 
-Settings live in `config.json` and the activity log in `vencord-auto-updater.log`
+Settings live in `config.json` and the activity log in `patchcord.log`
 (both created next to the exe at runtime, not tracked in git).
 
 ## Notes

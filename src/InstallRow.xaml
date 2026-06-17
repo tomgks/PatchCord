@@ -1,4 +1,4 @@
-<UserControl x:Class="VencordAutoUpdater.InstallRow"
+<UserControl x:Class="PatchCord.InstallRow"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Border x:Name="RowRoot" Background="#313338" CornerRadius="12" Padding="18,15" Margin="0,0,0,11"

@@ -1,11 +1,11 @@
 using System.IO;
 
-namespace VencordAutoUpdater;
+namespace PatchCord;
 
 /// <summary>Tiny file logger (rotates at ~1 MB), mirrors the PowerShell Write-Log.</summary>
 public static class Log
 {
-    public static string FilePath { get; set; } = "vencord-auto-updater.log";
+    public static string FilePath { get; set; } = "patchcord.log";
 
     public static void Write(string message, string level = "INFO")
     {
