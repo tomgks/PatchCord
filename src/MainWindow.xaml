@@ -226,6 +226,10 @@
             </Grid>
             <Slider x:Name="SliderInterval" Minimum="5" Maximum="120" TickFrequency="5" IsSnapToTickEnabled="True" Margin="0,4,0,0"/>
 
+            <TextBlock Text="Diagnostics" Foreground="{DynamicResource Sub}" FontSize="12" FontWeight="Medium" Margin="4,28,0,8"/>
+            <TextBlock Text="Copies your log, install paths and versions to the clipboard so you can paste them into a bug report." Foreground="{DynamicResource Sub}" FontSize="12" TextWrapping="Wrap" MaxWidth="600" HorizontalAlignment="Left" Margin="2,0,0,8"/>
+            <Button x:Name="BtnCopyDiag" Style="{StaticResource Ghost}" Content="Copy diagnostics" HorizontalAlignment="Left" Margin="2,0,0,0"/>
+
             <Border x:Name="BtnAppearanceToggle" Cursor="Hand" Background="Transparent" Margin="0,28,0,0">
               <StackPanel Orientation="Horizontal">
                 <TextBlock x:Name="AppearanceChevron" Text="&#x25B8;" Foreground="{DynamicResource Sub}" FontSize="12" FontWeight="Medium" VerticalAlignment="Center" Margin="4,0,7,0"/>

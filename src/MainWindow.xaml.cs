@@ -91,6 +91,18 @@ public partial class MainWindow : Window
         BtnGetMod.Click += (_, _) => OpenModDownload();
         BtnGetModOpt.Click += (_, _) => OpenModDownload();
 
+        BtnCopyDiag.Click += (_, _) =>
+        {
+            var text = BuildDiagnostics();
+            for (int attempt = 0; attempt < 6; attempt++)
+            {
+                try { System.Windows.Clipboard.SetText(text); AddLogLine("Diagnostics copied to clipboard."); return; }
+                catch { System.Threading.Thread.Sleep(80); } // clipboard can be briefly locked by another app
+            }
+            Log.Write("Copy diagnostics: clipboard stayed busy.", "WARN");
+            AddLogLine("Couldn't copy, the clipboard was busy. Try again.");
+        };
+
         BtnStartup.Click += (_, _) =>
         {
             try { Startup.Set(!Startup.IsEnabled); }
@@ -437,6 +449,50 @@ public partial class MainWindow : Window
         if (s < 86400) return $"{(int)(s / 3600)}h ago";
         if (s < 7 * 86400) return $"{(int)(s / 86400)}d ago";
         return utc.ToLocalTime().ToString("MMM d");
+    }
+
+    private string BuildDiagnostics()
+    {
+        var sb = new System.Text.StringBuilder();
+        var ver = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "?";
+        sb.AppendLine($"PatchCord v{ver}");
+        sb.AppendLine(System.Runtime.InteropServices.RuntimeInformation.OSDescription);
+        sb.AppendLine(System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
+        sb.AppendLine($"monitoring={(_cfg.MonitoringEnabled ? "on" : "off")}  interval={_cfg.IntervalSeconds}s  openAsar={(_cfg.OpenAsar ? "on" : "off")}  theme={_cfg.Ui.Theme}  runAtStartup={(Startup.IsEnabled ? "on" : "off")}");
+        sb.AppendLine($"mods on disk: Vencord={(App.ModInstalled("vencord") ? "yes" : "no")}  Equicord={(App.ModInstalled("equicord") ? "yes" : "no")}  BetterDiscord={(App.ModInstalled("betterdiscord") ? "yes" : "no")}");
+        sb.AppendLine();
+        sb.AppendLine($"installs ({_cfg.Installs.Count}):");
+        foreach (var i in _cfg.Installs)
+        {
+            InstallState st;
+            try { st = PatchEngine.GetState(i, _cfg.OpenAsar); }
+            catch { st = new InstallState(false, false, null, null, null, false); }
+            sb.AppendLine($"- {i.Name}  mod={ModShort(i.ClientMod)}  {(i.Enabled ? "managed" : "paused")}{(i.Custom ? "  (custom)" : "")}");
+            sb.AppendLine($"    {i.Path}");
+            sb.AppendLine($"    running={st.Running} installed={st.Installed} app={st.AppName ?? "-"} injected={st.InjectedMod} openAsar={st.OpenAsarPresent}");
+        }
+        if (_cfg.History.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("recent patches:");
+            foreach (var e in _cfg.History.Take(8))
+                sb.AppendLine($"- {Ago(e.When)}  {e.Install}  {e.Summary}");
+        }
+        sb.AppendLine();
+        sb.AppendLine("log (recent):");
+        try
+        {
+            if (File.Exists(Log.FilePath))
+            {
+                using var fs = new FileStream(Log.FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var sr = new StreamReader(fs);
+                var lines = sr.ReadToEnd().Replace("\r\n", "\n").Split('\n').Where(l => l.Length > 0).ToArray();
+                foreach (var l in lines.Reverse().Take(40).Reverse()) sb.AppendLine(l);
+            }
+            else sb.Append(LogText.Text);
+        }
+        catch (Exception ex) { sb.AppendLine($"(couldn't read log: {ex.Message})"); }
+        return sb.ToString();
     }
 
     private void BuildHistory()
