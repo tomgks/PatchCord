@@ -20,9 +20,11 @@ public partial class MainWindow : Window
     private readonly HashSet<string> _patchFailed = new();
 
     private WinForms.NotifyIcon? _ni;
+    private WinForms.ToolStripMenuItem? _trayHeader, _trayToggle;
     private DispatcherTimer? _timer;
     private Drawing.Icon? _iconOn, _iconOff;
     private bool _quitting;
+    private string _warnMod = "vencord"; // mod the install warning/Get button points at
 
     private const string AppName = "PatchCord";
 
@@ -172,8 +174,12 @@ public partial class MainWindow : Window
         _ni = new WinForms.NotifyIcon { Icon = trayIcon, Visible = true, Text = AppName };
 
         var menu = new WinForms.ContextMenuStrip();
+        _trayHeader = new WinForms.ToolStripMenuItem(AppName) { Enabled = false };
+        menu.Items.Add(_trayHeader);
+        menu.Items.Add(new WinForms.ToolStripSeparator());
         menu.Items.Add("Open", null, (_, _) => ShowMainWindow());
-        menu.Items.Add("Toggle monitoring", null, (_, _) => ToggleMonitoring());
+        _trayToggle = new WinForms.ToolStripMenuItem("Pause monitoring", null, (_, _) => ToggleMonitoring());
+        menu.Items.Add(_trayToggle);
         menu.Items.Add(new WinForms.ToolStripSeparator());
         menu.Items.Add("Quit", null, (_, _) => QuitApp());
         _ni.ContextMenuStrip = menu;
@@ -364,31 +370,38 @@ public partial class MainWindow : Window
             var stateIcon = on ? _iconOn : _iconOff;
             if (stateIcon != null) _ni.Icon = stateIcon;
         }
+        if (_trayHeader != null) _trayHeader.Text = $"{AppName} — {(on ? "Active" : "Paused")}";
+        if (_trayToggle != null) _trayToggle.Text = on ? "Pause monitoring" : "Resume monitoring";
 
         UpdateModWarning();
+        BuildHistory();
     }
 
     private void UpdateModWarning()
     {
-        bool missing = _cfg.ClientMod != "none" && !App.ModInstalled(_cfg.ClientMod);
-        var vis = missing ? Visibility.Visible : Visibility.Collapsed;
+        var missing = _cfg.Installs
+            .Where(i => i.Enabled && i.ClientMod != "none" && !App.ModInstalled(i.ClientMod))
+            .Select(i => i.ClientMod).Distinct().ToList();
+        var vis = missing.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         ModWarn.Visibility = vis;
         ModWarnOpt.Visibility = vis;
-        if (missing)
+        if (missing.Count > 0)
         {
-            var label = ModLabel(_cfg.ClientMod);
-            var dir = _cfg.ClientMod switch
+            _warnMod = missing[0];
+            var label = ModLabel(_warnMod);
+            var dir = _warnMod switch
             {
                 "equicord" => @"%APPDATA%\Equicord\dist",
                 "betterdiscord" => @"%APPDATA%\BetterDiscord\data",
                 _ => @"%APPDATA%\Vencord\dist",
             };
-            var msg = $"{label} isn't installed yet. Run the {label} installer at least once " +
-                      $"(so {dir} exists) — then this app will keep it injected after every Discord update.";
+            var msg = missing.Count == 1
+                ? $"{label} isn't installed yet. Run the {label} installer once (so {dir} exists) and this app will keep it injected after every Discord update."
+                : $"Some installs use mods that aren't installed yet ({string.Join(", ", missing.Select(ModShort))}). Run each one's installer once so this app can keep them injected.";
             ModWarnText.Text = msg;
             ModWarnOptText.Text = msg;
-            BtnGetMod.Content = $"Get {label}";
-            BtnGetModOpt.Content = $"Get {label}";
+            BtnGetMod.Content = $"Get {ModShort(_warnMod)}";
+            BtnGetModOpt.Content = $"Get {ModShort(_warnMod)}";
         }
     }
 
@@ -401,11 +414,52 @@ public partial class MainWindow : Window
 
     private void OpenModDownload()
     {
-        if (_cfg.ClientMod == "none") return;
-        var url = ModDownloadUrl(_cfg.ClientMod);
+        if (_warnMod == "none") return;
+        var url = ModDownloadUrl(_warnMod);
         try { Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true }); }
         catch (Exception ex) { Log.Write($"Could not open {url}: {ex.Message}", "WARN"); }
-        AddLogLine($"Opened {ModLabel(_cfg.ClientMod)} download page.");
+        AddLogLine($"Opened {ModLabel(_warnMod)} download page.");
+    }
+
+    internal static string ModShort(string mod) => mod switch
+    {
+        "vencord" => "Vencord",
+        "equicord" => "Equicord",
+        "betterdiscord" => "BetterDiscord",
+        _ => "None",
+    };
+
+    private static string Ago(DateTime utc)
+    {
+        var s = (DateTime.UtcNow - utc).TotalSeconds;
+        if (s < 60) return "just now";
+        if (s < 3600) return $"{(int)(s / 60)}m ago";
+        if (s < 86400) return $"{(int)(s / 3600)}h ago";
+        if (s < 7 * 86400) return $"{(int)(s / 86400)}d ago";
+        return utc.ToLocalTime().ToString("MMM d");
+    }
+
+    private void BuildHistory()
+    {
+        var p = Theme.Resolve(_cfg.Ui.Theme);
+        HistoryPanel.Children.Clear();
+        if (_cfg.History.Count == 0)
+        {
+            HistoryPanel.Children.Add(new TextBlock
+            {
+                Text = "No re-patches yet.", Foreground = Theme.Brush(p.Sub), FontSize = 12,
+                Margin = new Thickness(2, 0, 0, 8),
+            });
+            return;
+        }
+        foreach (var e in _cfg.History.Take(6))
+        {
+            var tb = new TextBlock { FontSize = 12, Margin = new Thickness(2, 0, 0, 7) };
+            tb.Inlines.Add(new System.Windows.Documents.Run(Ago(e.When) + "   ") { Foreground = Theme.Brush(p.Sub) });
+            tb.Inlines.Add(new System.Windows.Documents.Run(e.Install) { Foreground = Theme.Brush(p.Text), FontWeight = FontWeights.SemiBold });
+            tb.Inlines.Add(new System.Windows.Documents.Run("  ·  " + e.Summary) { Foreground = Theme.Brush(p.Sub) });
+            HistoryPanel.Children.Add(tb);
+        }
     }
 
     private void UpdateSettingsUi()
@@ -476,17 +530,39 @@ public partial class MainWindow : Window
             var capturedMod = mod;
             card.MouseLeftButtonUp += (_, _) =>
             {
-                if (_cfg.ClientMod == capturedMod) return;
-                _cfg.ClientMod = capturedMod;
+                _cfg.ClientMod = capturedMod;                          // default for new installs
+                foreach (var i in _cfg.Installs) i.ClientMod = capturedMod; // apply to all current installs
                 _patchFailed.Clear();
                 Save();
                 WarnIfPatcherMissing();
-                AddLogLine($"Client mod: {(capturedMod == "none" ? "None" : ModLabel(capturedMod))}");
+                AddLogLine($"Client mod set to {ModShort(capturedMod)} for all installs.");
                 UpdateSettingsUi();
+                BuildInstallRows();
                 InvokeMonitor();
             };
             ClientModPanel.Children.Add(card);
         }
+    }
+
+    private Border MakeModMenuItem(string title, bool selected)
+    {
+        var p = Theme.Resolve(_cfg.Ui.Theme);
+        var b = new Border
+        {
+            CornerRadius = new CornerRadius(4),
+            Padding = new Thickness(10, 7, 10, 7),
+            Cursor = Cursors.Hand,
+            Background = System.Windows.Media.Brushes.Transparent,
+            Child = new TextBlock
+            {
+                Text = title, FontSize = 12,
+                FontWeight = selected ? FontWeights.SemiBold : FontWeights.Normal,
+                Foreground = Theme.Brush(selected ? p.Accent : p.Text),
+            },
+        };
+        b.MouseEnter += (_, _) => b.Background = Theme.Brush(p.GhostHover);
+        b.MouseLeave += (_, _) => b.Background = System.Windows.Media.Brushes.Transparent;
+        return b;
     }
 
     private void UpdateClientModSelection()
@@ -542,7 +618,7 @@ public partial class MainWindow : Window
                 label.Text = text;
                 label.Foreground = Theme.Brush(fg);
             }
-            var desired = _cfg.ClientMod;
+            var desired = inst.ClientMod;
             if (!st.Installed)
                 SetBadge(row.RowBadge, row.RowStatus, "#80848E", "#FFFFFF", "Not installed");
             else if (st.InjectedMod == "vencord")
@@ -574,7 +650,33 @@ public partial class MainWindow : Window
             tg.Foreground = Theme.Brush(inst.Enabled ? p.OnText : p.Text);
             tg.Content = inst.Enabled ? "Managed" : "Paused";
             tg.Click += (_, _) => { captured.Enabled = !captured.Enabled; _patchFailed.Remove(captured.Path); Save(); InvokeMonitor(); };
-            row.RowOpenAsarToggle.Visibility = Visibility.Collapsed; // mod/OpenAsar choice lives in Options
+
+            // per-install mod picker
+            var modBtn = row.RowModBtn;
+            modBtn.Content = ModShort(inst.ClientMod) + "   ▾";
+            modBtn.Background = Theme.Brush(p.GhostHover);
+            modBtn.Foreground = Theme.Brush(p.Text);
+            modBtn.Click += (_, _) => row.RowModPopup.IsOpen = true;
+            row.RowModPopupBox.Background = Theme.Brush(p.Card2);
+            row.RowModPopupBox.BorderBrush = Theme.Brush(p.Border);
+            row.RowModItems.Children.Clear();
+            foreach (var (mod, title, _) in ClientModItems)
+            {
+                var item = MakeModMenuItem(title, mod == inst.ClientMod);
+                var capturedMod = mod;
+                item.MouseLeftButtonUp += (_, _) =>
+                {
+                    row.RowModPopup.IsOpen = false;
+                    if (captured.ClientMod == capturedMod) return;
+                    captured.ClientMod = capturedMod;
+                    _patchFailed.Remove(captured.Path);
+                    Save();
+                    WarnIfPatcherMissing();
+                    AddLogLine($"{captured.Name}: client mod set to {ModShort(capturedMod)}");
+                    InvokeMonitor();
+                };
+                row.RowModItems.Children.Add(item);
+            }
 
             var rm = row.RowRemove;
             rm.Foreground = Theme.Brush(p.Sub);
@@ -620,34 +722,33 @@ public partial class MainWindow : Window
 
     private void WarnIfPatcherMissing()
     {
-        if (_cfg.ClientMod == "none") return;
-        if (!App.ModInstalled(_cfg.ClientMod))
-            Log.Write($"{ModLabel(_cfg.ClientMod)} isn't installed yet (install it once).", "WARN");
+        foreach (var i in _cfg.Installs)
+            if (i.Enabled && i.ClientMod != "none" && !App.ModInstalled(i.ClientMod))
+                Log.Write($"{i.Name}: {ModLabel(i.ClientMod)} isn't installed yet (install it once).", "WARN");
     }
 
     private void InvokeMonitor()
     {
-        var desired = _cfg.ClientMod;                 // vencord / equicord / betterdiscord / none
         bool wantOpenAsar = _cfg.OpenAsar;
-        // Don't touch Discord if the mod isn't installed yet.
-        bool modReady = desired == "none" || App.ModInstalled(desired);
-        string desiredAsar = desired is "vencord" or "equicord" ? desired : "none"; // app.asar layer
-        bool desiredBD = desired == "betterdiscord";                                 // core index.js layer
-
         var states = new Dictionary<string, InstallState>();
-        var candidates = new List<(Install inst, bool needOpenAsar, bool asarChange, bool bdChange)>();
+        var candidates = new List<(Install inst, string desiredAsar, bool desiredBD, bool needOpenAsar, bool asarChange, bool bdChange)>();
         foreach (var inst in _cfg.Installs)
         {
             var st = PatchEngine.GetState(inst, wantOpenAsar);
             states[inst.Path] = st;
             var key = inst.Path;
 
+            var desired = inst.ClientMod;                              // each install picks its own mod
+            bool modReady = desired == "none" || App.ModInstalled(desired);
+            string desiredAsar = desired is "vencord" or "equicord" ? desired : "none";
+            bool desiredBD = desired == "betterdiscord";
+
             bool managed = inst.Enabled && st.Installed && st.Running && st.Resources != null && st.AppDir != null
                            && !_patchFailed.Contains(inst.Path);
             bool needOpenAsar = managed && wantOpenAsar && !st.OpenAsarPresent;
 
             bool asarChange = false, bdChange = false;
-            if (managed && (desired == "none" || modReady))
+            if (managed && modReady)
             {
                 // Layer A (app.asar): only ever touch our own vencord/equicord stubs.
                 asarChange = desiredAsar == "none"
@@ -659,7 +760,7 @@ public partial class MainWindow : Window
 
             if (needOpenAsar || asarChange || bdChange)
             {
-                candidates.Add((inst, needOpenAsar, asarChange, bdChange));
+                candidates.Add((inst, desiredAsar, desiredBD, needOpenAsar, asarChange, bdChange));
                 if (!_alerted.Contains(key))
                 {
                     _alerted.Add(key);
@@ -686,6 +787,7 @@ public partial class MainWindow : Window
         }
         foreach (var kv in states) _lastStates[kv.Key] = kv.Value;
 
+        bool recorded = false;
         if (_cfg.MonitoringEnabled && candidates.Count > 0)
         {
             if (Process.GetProcessesByName("Update").Length > 0)
@@ -695,8 +797,8 @@ public partial class MainWindow : Window
             else
             {
                 var stopped = new List<Install>();
-                var done = new List<Install>();
-                foreach (var (c, needOpenAsar, asarChange, bdChange) in candidates)
+                var done = new List<(Install inst, string summary)>();
+                foreach (var (c, desiredAsar, desiredBD, needOpenAsar, asarChange, bdChange) in candidates)
                 {
                     try
                     {
@@ -705,11 +807,13 @@ public partial class MainWindow : Window
                         var st = states[c.Path];
                         var resources = st.Resources!;
                         var appDir = st.AppDir!;
+                        var changes = new List<string>();
                         // OpenAsar first (underlying asar), then the app.asar client mod on top.
                         if (needOpenAsar)
                         {
                             OpenAsarEngine.Install(resources);
                             Log.Write($"{c.Name}: OpenAsar installed.", "OK");
+                            changes.Add("OpenAsar");
                         }
                         if (asarChange)
                         {
@@ -719,8 +823,9 @@ public partial class MainWindow : Window
                             {
                                 PatchEngine.Patch(resources, _stubs[desiredAsar]);
                                 Log.Write($"{c.Name}: {ModLabel(desiredAsar)} injected.", "OK");
+                                changes.Add(ModShort(desiredAsar));
                             }
-                            else Log.Write($"{c.Name}: client mod removed.", "OK");
+                            else { Log.Write($"{c.Name}: client mod removed.", "OK"); changes.Add("removed client mod"); }
                         }
                         if (bdChange)
                         {
@@ -728,21 +833,23 @@ public partial class MainWindow : Window
                             {
                                 BetterDiscordEngine.Inject(appDir, App.BetterDiscordAsarPath);
                                 Log.Write($"{c.Name}: BetterDiscord injected.", "OK");
+                                changes.Add("BetterDiscord");
                             }
                             else
                             {
                                 BetterDiscordEngine.Restore(appDir);
                                 Log.Write($"{c.Name}: BetterDiscord removed.", "OK");
+                                changes.Add("removed BetterDiscord");
                             }
                         }
-                        done.Add(c);
+                        done.Add((c, changes.Count > 0 ? string.Join(" + ", changes) : "re-patched"));
                     }
                     catch (Exception ex)
                     {
                         // Back off so we don't kill Discord again on the next check.
                         _patchFailed.Add(c.Path);
-                        Log.Write($"Failed to patch {c.Name}: {ex.Message}. Leaving it alone — " +
-                                  $"re-run the {ModLabel(desired)} installer, then toggle this install off/on.", "ERROR");
+                        Log.Write($"Failed to patch {c.Name}: {ex.Message}. Leaving it alone. " +
+                                  "Re-run that mod's installer, then toggle the install off and on.", "ERROR");
                     }
                 }
                 // Always restart Discord if we stopped it, even on a patch failure.
@@ -752,10 +859,15 @@ public partial class MainWindow : Window
                     Log.Write($"Restarted {c.Name}.", "OK");
                     _lastStates[c.Path] = PatchEngine.GetState(c, wantOpenAsar);
                 }
-                foreach (var c in done)
+                foreach (var (c, summary) in done)
+                {
                     Alert.Show(_cfg, $"Restored {c.Name}. Discord has been restarted.");
+                    _cfg.AddHistory(c.Name, summary);
+                    recorded = true;
+                }
             }
         }
+        if (recorded) Save();
 
         UpdateStatusUi();
         BuildInstallRows();

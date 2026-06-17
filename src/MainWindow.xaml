@@ -165,6 +165,9 @@
               <Button x:Name="BtnAddCustom" Style="{StaticResource Ghost}" Content="Add custom path..." Margin="10,0,0,0"/>
             </StackPanel>
 
+            <TextBlock Text="Recent patches" Foreground="{DynamicResource Sub}" FontSize="12" FontWeight="Medium" Margin="2,24,0,10"/>
+            <StackPanel x:Name="HistoryPanel"/>
+
             <TextBlock Text="Activity" Foreground="{DynamicResource Sub}" FontSize="12" FontWeight="Medium" Margin="2,24,0,10"/>
             <Border Background="{DynamicResource Card2}" CornerRadius="4" Padding="14" Height="130">
               <ScrollViewer x:Name="LogScroll" VerticalScrollBarVisibility="Auto">
@@ -178,7 +181,7 @@
         <ScrollViewer x:Name="OptionsScroll" Visibility="Collapsed" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="20,2,20,18">
           <StackPanel>
             <TextBlock Text="Client mod" Foreground="{DynamicResource Sub}" FontSize="12" FontWeight="Medium" Margin="4,4,0,6"/>
-            <TextBlock Text="Pick one mod to keep injected after Discord updates — only one client mod can be active at a time. OpenAsar (below) is separate and stacks under any of them." Foreground="{DynamicResource Sub}" FontSize="12" TextWrapping="Wrap" MaxWidth="600" HorizontalAlignment="Left" Margin="4,0,0,12"/>
+            <TextBlock Text="Sets the mod for all your installs. To run a different mod on a specific install (say stable on Vencord, PTB on BetterDiscord), change it on that install in the Status tab. OpenAsar (below) is separate and stacks under any mod." Foreground="{DynamicResource Sub}" FontSize="12" TextWrapping="Wrap" MaxWidth="600" HorizontalAlignment="Left" Margin="4,0,0,12"/>
             <StackPanel x:Name="ClientModPanel"/>
             <Border x:Name="ModWarnOpt" Visibility="Collapsed" Margin="0,2,0,0" Padding="14,11" CornerRadius="6" Background="#1F1A0A" BorderBrush="#FAA61A" BorderThickness="1">
               <Grid>

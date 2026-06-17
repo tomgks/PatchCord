@@ -18,12 +18,17 @@
         <TextBlock x:Name="RowPath" Foreground="#B5BAC1" FontSize="11" Margin="0,5,0,0" TextTrimming="CharacterEllipsis" MaxWidth="320" HorizontalAlignment="Left"/>
       </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-        <Button x:Name="RowToggle" Width="96" Height="30" Foreground="White" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
+        <Button x:Name="RowModBtn" Height="30" MinWidth="118" Foreground="White" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
           <Button.Template><ControlTemplate TargetType="Button">
-            <Border CornerRadius="5" Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+            <Border CornerRadius="5" Background="{TemplateBinding Background}" Padding="11,0"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
           </ControlTemplate></Button.Template>
         </Button>
-        <Button x:Name="RowOpenAsarToggle" Width="104" Height="30" Margin="8,0,0,0" Foreground="White" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
+        <Popup x:Name="RowModPopup" PlacementTarget="{Binding ElementName=RowModBtn}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True" VerticalOffset="4">
+          <Border x:Name="RowModPopupBox" CornerRadius="6" BorderThickness="1" Padding="4" MinWidth="190">
+            <StackPanel x:Name="RowModItems"/>
+          </Border>
+        </Popup>
+        <Button x:Name="RowToggle" Width="96" Height="30" Margin="8,0,0,0" Foreground="White" FontSize="11" FontWeight="SemiBold" Cursor="Hand">
           <Button.Template><ControlTemplate TargetType="Button">
             <Border CornerRadius="5" Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
           </ControlTemplate></Button.Template>

@@ -10,9 +10,17 @@ public sealed class Install
     [JsonPropertyName("branch")] public string Branch { get; set; } = "Discord";
     [JsonPropertyName("path")]   public string Path   { get; set; } = "";
     [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+    [JsonPropertyName("clientMod")] public string ClientMod { get; set; } = ""; // per-install; filled from the default on load
     // legacy per-install flag, migrated to AppConfig.OpenAsar on load
     [JsonPropertyName("openAsar")] public bool OpenAsar { get; set; }
     [JsonPropertyName("custom")] public bool Custom   { get; set; }
+}
+
+public sealed class PatchEvent
+{
+    [JsonPropertyName("when")]    public DateTime When    { get; set; } = DateTime.UtcNow;
+    [JsonPropertyName("install")] public string   Install { get; set; } = "";
+    [JsonPropertyName("summary")] public string   Summary { get; set; } = "";
 }
 
 public sealed class UiConfig
@@ -32,6 +40,7 @@ public sealed class AppConfig
     [JsonPropertyName("openAsar")]          public bool OpenAsar          { get; set; }
     [JsonPropertyName("installs")]          public List<Install> Installs { get; set; } = new();
     [JsonPropertyName("ui")]                public UiConfig Ui            { get; set; } = new();
+    [JsonPropertyName("history")]           public List<PatchEvent> History { get; set; } = new();
 
     public static readonly List<string> ClientMods = new() { "vencord", "equicord", "betterdiscord", "none" };
 
@@ -105,9 +114,22 @@ public sealed class AppConfig
 
         ClientMod = (ClientMod ?? "vencord").ToLowerInvariant();
         if (!ClientMods.Contains(ClientMod)) ClientMod = "vencord";
-        // Migrate legacy per-install OpenAsar flag to the global one.
         foreach (var i in Installs)
+        {
+            // Each install picks its own mod; older configs inherit the global default.
+            i.ClientMod = (i.ClientMod ?? "").ToLowerInvariant();
+            if (!ClientMods.Contains(i.ClientMod)) i.ClientMod = ClientMod;
+            // Migrate legacy per-install OpenAsar flag to the global one.
             if (i.OpenAsar) { OpenAsar = true; i.OpenAsar = false; }
+        }
+        History ??= new();
+        if (History.Count > 12) History.RemoveRange(12, History.Count - 12);
+    }
+
+    public void AddHistory(string install, string summary)
+    {
+        History.Insert(0, new PatchEvent { When = DateTime.UtcNow, Install = install, Summary = summary });
+        if (History.Count > 12) History.RemoveRange(12, History.Count - 12);
     }
 
     public static readonly List<string> NotifyStyles = new() { "bar", "solid", "minimal", "outline" };
@@ -123,7 +145,7 @@ public sealed class AppConfig
         var existing = Installs.FirstOrDefault(i =>
             string.Equals(i.Path, path, StringComparison.OrdinalIgnoreCase));
         if (existing != null) { existing.Enabled = enabled; return false; }
-        Installs.Add(new Install { Name = name, Branch = branch, Path = path, Enabled = enabled, Custom = custom });
+        Installs.Add(new Install { Name = name, Branch = branch, Path = path, Enabled = enabled, Custom = custom, ClientMod = ClientMod });
         return true;
     }
 }
