@@ -401,15 +401,21 @@ public partial class MainWindow : Window
         {
             _warnMod = missing[0];
             var label = ModLabel(_warnMod);
-            var dir = _warnMod switch
+            string msg;
+            if (missing.Count > 1)
+                msg = $"Some installs use mods that aren't installed yet ({string.Join(", ", missing.Select(ModShort))}). Run each one's installer once so this app can keep them injected.";
+            else if (_warnMod == "bandagedbd")
+                msg = "BandagedBD isn't snapshotted yet. Install it once with the BandagedBD installer while monitoring is on, so this app can capture it — then it'll restore it after every Discord update.";
+            else
             {
-                "equicord" => @"%APPDATA%\Equicord\dist",
-                "betterdiscord" => @"%APPDATA%\BetterDiscord\data",
-                _ => @"%APPDATA%\Vencord\dist",
-            };
-            var msg = missing.Count == 1
-                ? $"{label} isn't installed yet. Run the {label} installer once (so {dir} exists) and this app will keep it injected after every Discord update."
-                : $"Some installs use mods that aren't installed yet ({string.Join(", ", missing.Select(ModShort))}). Run each one's installer once so this app can keep them injected.";
+                var dir = _warnMod switch
+                {
+                    "equicord" => @"%APPDATA%\Equicord\dist",
+                    "betterdiscord" => @"%APPDATA%\BetterDiscord\data",
+                    _ => @"%APPDATA%\Vencord\dist",
+                };
+                msg = $"{label} isn't installed yet. Run the {label} installer once (so {dir} exists) and this app will keep it injected after every Discord update.";
+            }
             ModWarnText.Text = msg;
             ModWarnOptText.Text = msg;
             BtnGetMod.Content = $"Get {ModShort(_warnMod)}";
@@ -421,6 +427,7 @@ public partial class MainWindow : Window
     {
         "equicord" => "https://github.com/Equicord/Equicord#installing--uninstalling",
         "betterdiscord" => "https://betterdiscord.app/",
+        "bandagedbd" => "https://github.com/rauenzi/BBDInstaller/releases/latest",
         _ => "https://vencord.dev/download/",
     };
 
@@ -438,6 +445,7 @@ public partial class MainWindow : Window
         "vencord" => "Vencord",
         "equicord" => "Equicord",
         "betterdiscord" => "BetterDiscord",
+        "bandagedbd" => "BandagedBD",
         _ => "None",
     };
 
@@ -459,7 +467,7 @@ public partial class MainWindow : Window
         sb.AppendLine(System.Runtime.InteropServices.RuntimeInformation.OSDescription);
         sb.AppendLine(System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
         sb.AppendLine($"monitoring={(_cfg.MonitoringEnabled ? "on" : "off")}  interval={_cfg.IntervalSeconds}s  openAsar={(_cfg.OpenAsar ? "on" : "off")}  theme={_cfg.Ui.Theme}  runAtStartup={(Startup.IsEnabled ? "on" : "off")}");
-        sb.AppendLine($"mods on disk: Vencord={(App.ModInstalled("vencord") ? "yes" : "no")}  Equicord={(App.ModInstalled("equicord") ? "yes" : "no")}  BetterDiscord={(App.ModInstalled("betterdiscord") ? "yes" : "no")}");
+        sb.AppendLine($"mods on disk: Vencord={(App.ModInstalled("vencord") ? "yes" : "no")}  Equicord={(App.ModInstalled("equicord") ? "yes" : "no")}  BetterDiscord={(App.ModInstalled("betterdiscord") ? "yes" : "no")}  BandagedBD={(App.ModInstalled("bandagedbd") ? "yes (snapshot)" : "no")}");
         sb.AppendLine();
         sb.AppendLine($"installs ({_cfg.Installs.Count}):");
         foreach (var i in _cfg.Installs)
@@ -563,6 +571,7 @@ public partial class MainWindow : Window
         ("vencord",       "Vencord",       "The original Discord client mod — adds plugins, themes and tweaks."),
         ("equicord",      "Equicord",      "A community fork of Vencord with 300+ extra plugins."),
         ("betterdiscord", "BetterDiscord", "The long-running client mod with a plugin/theme store. Patches Discord's core (a different method than Vencord)."),
+        ("bandagedbd",    "BandagedBD",    "Bandaged BetterDiscord, the older BD fork. Injected as an app folder; this app snapshots it and restores it after updates."),
         ("none",          "No client mod", "Don't keep any client mod injected (you can still use OpenAsar)."),
     };
 
@@ -683,6 +692,8 @@ public partial class MainWindow : Window
                 SetBadge(row.RowBadge, row.RowStatus, p.On, p.OnText, "Equicord");
             else if (st.InjectedMod == "betterdiscord")
                 SetBadge(row.RowBadge, row.RowStatus, p.On, p.OnText, "BetterDiscord");
+            else if (st.InjectedMod == "bandagedbd")
+                SetBadge(row.RowBadge, row.RowStatus, p.On, p.OnText, "BandagedBD");
             else if (st.InjectedMod == "other")
                 SetBadge(row.RowBadge, row.RowStatus, "#80848E", "#FFFFFF", "Other mod");
             else if (inst.Enabled && desired != "none" && st.Running)
@@ -773,6 +784,7 @@ public partial class MainWindow : Window
         "vencord" => "Vencord",
         "equicord" => "Equicord",
         "betterdiscord" => "BetterDiscord",
+        "bandagedbd" => "BandagedBD",
         _ => "the client mod",
     };
 
@@ -787,23 +799,32 @@ public partial class MainWindow : Window
     {
         bool wantOpenAsar = _cfg.OpenAsar;
         var states = new Dictionary<string, InstallState>();
-        var candidates = new List<(Install inst, string desiredAsar, bool desiredBD, bool needOpenAsar, bool asarChange, bool bdChange)>();
+        var candidates = new List<(Install inst, string desiredAsar, bool desiredBD, bool desiredBBD, bool needOpenAsar, bool asarChange, bool bdChange, bool bbdChange)>();
         foreach (var inst in _cfg.Installs)
         {
             var st = PatchEngine.GetState(inst, wantOpenAsar);
             states[inst.Path] = st;
             var key = inst.Path;
 
+            // Keep a fresh snapshot whenever BandagedBD is present (so we can restore it later).
+            if (st.BbdActive && st.Resources != null) BandagedBDEngine.CaptureSnapshot(st.Resources, inst.Path);
+
             var desired = inst.ClientMod;                              // each install picks its own mod
-            bool modReady = desired == "none" || App.ModInstalled(desired);
+            bool modReady = desired switch
+            {
+                "none" => true,
+                "bandagedbd" => BandagedBDEngine.HasSnapshot(inst.Path) || st.BbdActive,
+                _ => App.ModInstalled(desired),
+            };
             string desiredAsar = desired is "vencord" or "equicord" ? desired : "none";
             bool desiredBD = desired == "betterdiscord";
+            bool desiredBBD = desired == "bandagedbd";
 
             bool managed = inst.Enabled && st.Installed && st.Running && st.Resources != null && st.AppDir != null
                            && !_patchFailed.Contains(inst.Path);
             bool needOpenAsar = managed && wantOpenAsar && !st.OpenAsarPresent;
 
-            bool asarChange = false, bdChange = false;
+            bool asarChange = false, bdChange = false, bbdChange = false;
             if (managed && modReady)
             {
                 // Layer A (app.asar): only ever touch our own vencord/equicord stubs.
@@ -812,16 +833,18 @@ public partial class MainWindow : Window
                     : st.AsarMod != desiredAsar && st.AsarMod is "vencord" or "equicord" or "none";
                 // Layer B (BetterDiscord core patch).
                 bdChange = desiredBD ? !st.BdActive : st.BdActive;
+                // Layer C (BandagedBD app folder).
+                bbdChange = desiredBBD ? !st.BbdActive : st.BbdActive;
             }
 
-            if (needOpenAsar || asarChange || bdChange)
+            if (needOpenAsar || asarChange || bdChange || bbdChange)
             {
-                candidates.Add((inst, desiredAsar, desiredBD, needOpenAsar, asarChange, bdChange));
+                candidates.Add((inst, desiredAsar, desiredBD, desiredBBD, needOpenAsar, asarChange, bdChange, bbdChange));
                 if (!_alerted.Contains(key))
                 {
                     _alerted.Add(key);
                     var parts = new List<string>();
-                    if (asarChange || bdChange) parts.Add(desired == "none" ? "no client mod" : ModLabel(desired));
+                    if (asarChange || bdChange || bbdChange) parts.Add(desired == "none" ? "no client mod" : ModLabel(desired));
                     if (needOpenAsar) parts.Add("OpenAsar");
                     var what = string.Join(" + ", parts);
                     if (_cfg.MonitoringEnabled)
@@ -854,7 +877,7 @@ public partial class MainWindow : Window
             {
                 var stopped = new List<Install>();
                 var done = new List<(Install inst, string summary)>();
-                foreach (var (c, desiredAsar, desiredBD, needOpenAsar, asarChange, bdChange) in candidates)
+                foreach (var (c, desiredAsar, desiredBD, desiredBBD, needOpenAsar, asarChange, bdChange, bbdChange) in candidates)
                 {
                     try
                     {
@@ -896,6 +919,21 @@ public partial class MainWindow : Window
                                 BetterDiscordEngine.Restore(appDir);
                                 Log.Write($"{c.Name}: BetterDiscord removed.", "OK");
                                 changes.Add("removed BetterDiscord");
+                            }
+                        }
+                        if (bbdChange)
+                        {
+                            if (desiredBBD)
+                            {
+                                BandagedBDEngine.Restore(resources, c.Path);
+                                Log.Write($"{c.Name}: BandagedBD restored.", "OK");
+                                changes.Add("BandagedBD");
+                            }
+                            else
+                            {
+                                BandagedBDEngine.Remove(resources);
+                                Log.Write($"{c.Name}: BandagedBD removed.", "OK");
+                                changes.Add("removed BandagedBD");
                             }
                         }
                         done.Add((c, changes.Count > 0 ? string.Join(" + ", changes) : "re-patched"));

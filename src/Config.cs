@@ -42,7 +42,7 @@ public sealed class AppConfig
     [JsonPropertyName("ui")]                public UiConfig Ui            { get; set; } = new();
     [JsonPropertyName("history")]           public List<PatchEvent> History { get; set; } = new();
 
-    public static readonly List<string> ClientMods = new() { "vencord", "equicord", "betterdiscord", "none" };
+    public static readonly List<string> ClientMods = new() { "vencord", "equicord", "betterdiscord", "bandagedbd", "none" };
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {

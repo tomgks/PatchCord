@@ -7,13 +7,16 @@ using System.Text.Json;
 namespace PatchCord;
 
 // Live state of one install. AsarMod is the app.asar-layer mod
-// (none/vencord/equicord/other); BdActive is the BetterDiscord core patch.
+// (none/vencord/equicord/other); BdActive is the BetterDiscord core patch;
+// BbdActive is the BandagedBD app-folder injection.
 public sealed record InstallState(
     bool Running, bool Patched, string? AppName, string? Resources, string? AppDir, bool Installed,
-    bool OpenAsarPresent = false, string AsarMod = "none", bool BdActive = false)
+    bool OpenAsarPresent = false, string AsarMod = "none", bool BdActive = false, bool BbdActive = false)
 {
     public string InjectedMod => AsarMod is "vencord" or "equicord" ? AsarMod
-        : BdActive ? "betterdiscord" : (AsarMod == "other" ? "other" : "none");
+        : BbdActive ? "bandagedbd"
+        : BdActive ? "betterdiscord"
+        : (AsarMod == "other" ? "other" : "none");
 }
 
 // Vencord/Equicord asar patch: rename app.asar to _app.asar, write a stub app.asar
@@ -83,7 +86,7 @@ public static class PatchEngine
     {
         bool running = Process.GetProcessesByName(inst.Branch).Length > 0;
         var appDir = GetLatestAppDir(inst.Path);
-        bool patched = false, openAsar = false, bd = false;
+        bool patched = false, openAsar = false, bd = false, bbd = false;
         string asarMod = "none";
         string? appName = null, resources = null, appDirPath = null;
         if (appDir != null)
@@ -94,9 +97,10 @@ public static class PatchEngine
             patched = File.Exists(Path.Combine(resources, "_app.asar"));
             asarMod = DetectMod(resources);
             bd = BetterDiscordEngine.IsInjected(appDir.FullName);
+            bbd = BandagedBDEngine.IsInjected(resources);
             if (checkOpenAsar) openAsar = OpenAsarEngine.IsInstalled(resources);
         }
-        return new InstallState(running, patched, appName, resources, appDirPath, appDir != null, openAsar, asarMod, bd);
+        return new InstallState(running, patched, appName, resources, appDirPath, appDir != null, openAsar, asarMod, bd, bbd);
     }
 
     // Which mod the current stub points at: none / vencord / equicord / other.
