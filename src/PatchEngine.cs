@@ -104,6 +104,8 @@ public static class PatchEngine
     }
 
     // Which mod the current stub points at: none / vencord / equicord / other.
+    // The stub's path tells us which dist folder it points at; we then read that folder's
+    // patcher.js to get the REAL mod, so Equicord installed in the Vencord folder reads right.
     public static string DetectMod(string resourcesDir)
     {
         var appAsar = Path.Combine(resourcesDir, "app.asar");
@@ -113,8 +115,8 @@ public static class PatchEngine
         {
             if (new FileInfo(appAsar).Length > 64 * 1024) return "other"; // our stub is tiny
             var bytes = File.ReadAllBytes(appAsar);
-            if (ContainsAscii(bytes, "Equicord")) return "equicord";
-            if (ContainsAscii(bytes, "Vencord")) return "vencord";
+            if (ContainsAscii(bytes, "Equicord")) return App.ModOfPatcher(App.EquicordPatcherPath) ?? "equicord";
+            if (ContainsAscii(bytes, "Vencord")) return App.ModOfPatcher(App.VencordPatcherPath) ?? "vencord";
             return "other";
         }
         catch { return "none"; }

@@ -15,13 +15,46 @@ public partial class App : System.Windows.Application
     public static string EquicordPatcherPath { get; private set; } = "";
     public static string BetterDiscordAsarPath { get; private set; } = "";
 
+    // Read a patcher.js and decide which mod it actually is from its content, not the folder
+    // name. Equicord is a Vencord fork so its bundle mentions both, so "Equicord" wins. This is
+    // how we catch e.g. Equicord installed into the Vencord folder (it'd otherwise read as Vencord).
+    public static string? ModOfPatcher(string patcherPath)
+    {
+        if (!System.IO.File.Exists(patcherPath)) return null;
+        try
+        {
+            var text = System.IO.File.ReadAllText(patcherPath);
+            if (text.Contains("Equicord", StringComparison.Ordinal)) return "equicord";
+            if (text.Contains("Vencord", StringComparison.Ordinal)) return "vencord";
+            return "other";
+        }
+        catch { return null; }
+    }
+
+    private static (DateTime at, Dictionary<string, string>? map) _locCache;
+
+    // Where vencord/equicord actually live (mod -> real patcher.js), decided by content.
+    public static Dictionary<string, string> LocateAsarMods()
+    {
+        if (_locCache.map != null && (DateTime.UtcNow - _locCache.at).TotalSeconds < 3) return _locCache.map;
+        var map = new Dictionary<string, string>();
+        foreach (var pj in new[] { VencordPatcherPath, EquicordPatcherPath })
+        {
+            var mod = ModOfPatcher(pj);
+            if ((mod == "vencord" || mod == "equicord") && !map.ContainsKey(mod)) map[mod] = pj;
+        }
+        _locCache = (DateTime.UtcNow, map);
+        return map;
+    }
+
     public static string PatcherPathFor(string mod) =>
-        mod == "equicord" ? EquicordPatcherPath : VencordPatcherPath;
+        LocateAsarMods().TryGetValue(mod, out var p) ? p
+            : (mod == "equicord" ? EquicordPatcherPath : VencordPatcherPath);
 
     public static bool ModInstalled(string mod) => mod switch
     {
-        "vencord" => System.IO.File.Exists(VencordPatcherPath),
-        "equicord" => System.IO.File.Exists(EquicordPatcherPath),
+        "vencord" => LocateAsarMods().ContainsKey("vencord"),
+        "equicord" => LocateAsarMods().ContainsKey("equicord"),
         "betterdiscord" => System.IO.File.Exists(BetterDiscordAsarPath),
         "bandagedbd" => BandagedBDEngine.HasAnySnapshot(), // we can re-apply once we've snapshotted it
         _ => true, // "none"
@@ -97,6 +130,44 @@ public partial class App : System.Windows.Application
                 try { var r = Path.Combine(AppContext.BaseDirectory, "bbd"); if (Directory.Exists(r)) Directory.Delete(r, true); } catch { }
             }
             File.WriteAllText(Path.Combine(Path.GetTempPath(), "bbd_test.txt"), sb.ToString());
+            Shutdown();
+            return;
+        }
+
+        // --equi-test: verifies content-based detection (Equicord installed in the Vencord folder).
+        if (e.Args.Length == 1 && e.Args[0] == "--equi-test")
+        {
+            var sb = new System.Text.StringBuilder();
+            var root = Path.Combine(Path.GetTempPath(), "pc_equi_test");
+            try
+            {
+                if (Directory.Exists(root)) Directory.Delete(root, true);
+                var vencDir = Path.Combine(root, "Vencord", "dist");          // path says "Vencord"...
+                Directory.CreateDirectory(vencDir);
+                var equiPatcher = Path.Combine(vencDir, "patcher.js");
+                File.WriteAllText(equiPatcher, "// build with Equicord/abc123 user agent over Vencord internals"); // ...but it's Equicord
+                var realVenc = Path.Combine(root, "RealVencord", "dist");
+                Directory.CreateDirectory(realVenc);
+                File.WriteAllText(Path.Combine(realVenc, "patcher.js"), "// plain Vencord build");
+
+                sb.AppendLine($"ModOfPatcher(equicord-in-vencord-folder) = {ModOfPatcher(equiPatcher)} (want equicord)");
+                sb.AppendLine($"ModOfPatcher(real vencord)              = {ModOfPatcher(Path.Combine(realVenc, "patcher.js"))} (want vencord)");
+
+                VencordPatcherPath = equiPatcher;
+                EquicordPatcherPath = Path.Combine(root, "Equicord", "dist", "patcher.js"); // empty
+                sb.AppendLine($"ModInstalled(equicord) = {ModInstalled("equicord")} (want True)");
+                sb.AppendLine($"ModInstalled(vencord)  = {ModInstalled("vencord")} (want False)");
+                sb.AppendLine($"PatcherPathFor(equicord) points at the vencord folder = {PatcherPathFor("equicord") == equiPatcher} (want True)");
+
+                var res = Path.Combine(root, "fakeResources");
+                Directory.CreateDirectory(res);
+                File.WriteAllBytes(Path.Combine(res, "app.asar"), PatchEngine.BuildStubAsar(equiPatcher));
+                File.WriteAllText(Path.Combine(res, "_app.asar"), "orig");
+                sb.AppendLine($"DetectMod(stub) = {PatchEngine.DetectMod(res)} (want equicord)");
+            }
+            catch (Exception ex) { sb.AppendLine("ERROR: " + ex.Message); }
+            finally { try { if (Directory.Exists(root)) Directory.Delete(root, true); } catch { } }
+            File.WriteAllText(Path.Combine(Path.GetTempPath(), "equi_test.txt"), sb.ToString());
             Shutdown();
             return;
         }

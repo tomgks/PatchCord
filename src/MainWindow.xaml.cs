@@ -13,7 +13,6 @@ namespace PatchCord;
 public partial class MainWindow : Window
 {
     private AppConfig _cfg = new();
-    private readonly Dictionary<string, byte[]> _stubs = new(); // "vencord"/"equicord" -> stub bytes
     private readonly Dictionary<string, InstallState> _lastStates = new();
     private readonly HashSet<string> _alerted = new();
     // Installs whose patch failed this session; left alone so we don't keep killing Discord.
@@ -36,8 +35,6 @@ public partial class MainWindow : Window
     public void Initialize(bool startHidden, bool selfTest)
     {
         _cfg = AppConfig.Load(App.ConfigFile);
-        _stubs["vencord"] = PatchEngine.BuildStubAsar(App.VencordPatcherPath);
-        _stubs["equicord"] = PatchEngine.BuildStubAsar(App.EquicordPatcherPath);
         WarnIfPatcherMissing();
 
         ContentRendered += (_, _) => { try { StatusScroll.ScrollToTop(); } catch { } };
@@ -900,7 +897,7 @@ public partial class MainWindow : Window
                                 PatchEngine.Unpatch(resources);
                             if (desiredAsar != "none")
                             {
-                                PatchEngine.Patch(resources, _stubs[desiredAsar]);
+                                PatchEngine.Patch(resources, PatchEngine.BuildStubAsar(App.PatcherPathFor(desiredAsar)));
                                 Log.Write($"{c.Name}: {ModLabel(desiredAsar)} injected.", "OK");
                                 changes.Add(ModShort(desiredAsar));
                             }
